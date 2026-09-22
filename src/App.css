@@ -32,6 +32,7 @@
 html,
 body {
     width: 100%;
+    min-height: 100%;
     height: 100%;
     overflow: hidden;
     font-family: var(--font-ui);
@@ -42,14 +43,21 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
+html,
+body,
+#root {
+    min-height: 100dvh;
+}
+
 #game-container {
     position: relative;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100dvh;
     max-width: 100%;
     margin: 0 auto;
     overflow: hidden;
     touch-action: none;
+    --train-car-height: clamp(56px, 11vh, 76px);
 }
 
 /* ===== CUSTOM BACKGROUNDS ===== */
@@ -73,10 +81,10 @@ body {
 
 .custom-track {
     position: absolute;
-    bottom: -9vh;
+    bottom: clamp(-9vh, -7vh, -4vh);
     left: 0;
     right: 0;
-    height: 45vh;
+    height: clamp(28vh, 45vh, 48vh);
     z-index: 5;
     background-size: 100% 100%;
     background-position: bottom center;
@@ -110,12 +118,12 @@ body {
 .menu-content {
     text-align: center;
     z-index: 10;
-    width: 340px;
+    width: min(90vw, 360px);
     max-width: 90%;
 }
 
 .game-logo .train-emoji {
-    font-size: 70px;
+    font-size: clamp(48px, 8vw, 70px);
     display: block;
     margin-bottom: -10px;
     animation: float 3s ease-in-out infinite;
@@ -123,7 +131,7 @@ body {
 }
 
 .game-title {
-    font-size: 46px;
+    font-size: clamp(34px, 5vw, 46px);
     font-weight: 900;
     line-height: 1.3;
     margin-bottom: 20px;
@@ -239,7 +247,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    padding: 15px 20px;
+    padding: clamp(10px, 2vw, 18px) clamp(12px, 2vw, 20px);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -252,11 +260,11 @@ body {
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(12px);
     border-radius: 14px;
-    padding: 8px 16px;
+    padding: clamp(6px, 1.2vw, 10px) clamp(8px, 2vw, 16px);
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 18px;
+    font-size: clamp(12px, 1.8vw, 18px);
     font-weight: 700;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
@@ -286,7 +294,7 @@ body {
 }
 
 .hud-icon {
-    font-size: 20px;
+    font-size: clamp(15px, 2vw, 20px);
 }
 
 .hud-level {
@@ -360,14 +368,14 @@ body {
 /* ===== VERSE AREA (HOLOGRAPHIC QUESTION BOX) ===== */
 .verse-area {
     position: absolute;
-    top: 100px;
+    top: clamp(82px, 12vh, 100px);
     left: 50%;
     transform: translateX(-50%);
-    width: 95%;
+    width: min(92vw, 1000px);
     max-width: 1000px;
     text-align: center;
     z-index: 20;
-    padding: 35px;
+    padding: clamp(14px, 2.5vw, 35px);
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid rgba(0, 240, 255, 0.3);
@@ -377,7 +385,7 @@ body {
 }
 
 .verse-label {
-    font-size: 14px;
+    font-size: clamp(11px, 1.4vw, 14px);
     color: var(--primary);
     margin-bottom: 10px;
     font-weight: 700;
@@ -387,9 +395,9 @@ body {
 
 .verse-text {
     font-family: var(--font-quran);
-    font-size: 38px;
+    font-size: clamp(24px, 4vw, 38px);
     font-weight: 600;
-    line-height: 1.8;
+    line-height: 1.5;
     direction: rtl;
     background: linear-gradient(180deg, #FFFFFF 7%, #8EBFFF 100%);
     -webkit-background-clip: text;
@@ -448,8 +456,9 @@ body {
 
 .falling-star {
     position: absolute;
-    width: 380px;
-    height: 100px;
+    width: clamp(96px, 21vw, 220px);
+    min-height: clamp(46px, 8vw, 94px);
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -460,8 +469,11 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     background-color: transparent;
-    padding: 0 70px;
-    transition: transform 0.2s ease, filter 0.2s ease;
+    padding: clamp(7px, 1.2vw, 18px) clamp(8px, 2vw, 22px);
+    transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+    box-sizing: border-box;
+    border-radius: 30px;
+    will-change: transform, top, left;
 }
 
 /* Hide the SVG star completely */
@@ -482,7 +494,7 @@ body {
 
 .star-text {
     font-family: var(--font-quran);
-    font-size: 32px;
+    font-size: clamp(14px, 2vw, 30px);
     font-weight: 700;
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
@@ -490,12 +502,16 @@ body {
     text-align: center;
     direction: rtl;
     line-height: 1.2;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 8px 12px;
+    white-space: normal;
     word-break: break-word;
     overflow-wrap: break-word;
+    text-wrap: balance;
 }
 
 .falling-star.correct {
@@ -508,10 +524,29 @@ body {
     animation: wrongCard 0.5s ease-out !important;
 }
 
+.falling-star.caught {
+    z-index: 50;
+    pointer-events: none;
+    opacity: 1;
+    filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
+    animation: caughtAnswer 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 .falling-star.disabled {
     pointer-events: none;
     opacity: 0.3;
     filter: grayscale(1);
+}
+
+@keyframes caughtAnswer {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--catch-x), var(--catch-y)) scale(0.72);
+        opacity: 0.96;
+    }
 }
 
 @keyframes correctCard {
@@ -560,25 +595,68 @@ body {
 /* ===== TRAIN AREA ===== */
 .train-area {
     position: absolute;
-    bottom: 8vh;
+    bottom: clamp(10px, 10vh, 48px);
     left: 0;
     right: 0;
-    height: 30vh;
+    height: clamp(130px, 30vh, 240px);
     z-index: 10;
 }
 
 .train-container {
     position: absolute;
-    bottom: 0;
+    bottom: 12px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     align-items: flex-end;
     justify-content: center;
     will-change: left;
-    width: 80vw;
-    max-width: 1200px;
+    width: max-content;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
     animation: trainHover 2s ease-in-out infinite alternate;
+}
+
+@media (min-width: 768px) {
+    .train-container {
+        bottom: 28px;
+    }
+
+    .train-composite {
+        transform: translateY(-8px);
+    }
+}
+
+.train-container:active {
+    cursor: grabbing;
+}
+
+.train-composite {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    width: max-content;
+    max-width: none;
+    filter: drop-shadow(0 15px 20px rgba(0, 240, 255, 0.35));
+}
+
+.train-part {
+    display: block;
+    height: var(--train-car-height);
+    width: auto;
+    max-width: min(24vw, 180px);
+    user-select: none;
+    pointer-events: none;
+    max-height: none;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.train-part-2 {
+    position: relative;
+    z-index: 2;
 }
 
 @keyframes trainHover {
@@ -595,148 +673,56 @@ body {
     width: 100%;
     height: auto;
     object-fit: contain;
-    /* Adding a subtle neon glow underneath the train image itself */
     filter: drop-shadow(0 15px 15px rgba(0, 240, 255, 0.4));
 }
 
-/* ===== RESULT OVERLAY (MODAL) ===== */
-.result-overlay {
+/* ===== TEMPORARY RESULT MESSAGE ===== */
+.result-message {
     position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    top: 50%;
+    left: 50%;
     z-index: 200;
-    background: rgba(10, 15, 28, 0.85);
-    backdrop-filter: blur(12px);
-    transition: opacity 0.4s ease;
-}
-
-.result-icon {
-    font-size: 80px;
-    margin-bottom: 20px;
-    animation: bounceIn 0.6s ease-out;
-    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
-}
-
-@keyframes bounceIn {
-    0% {
-        transform: scale(0);
-    }
-
-    50% {
-        transform: scale(1.3);
-    }
-
-    70% {
-        transform: scale(0.9);
-    }
-
-    100% {
-        transform: scale(1);
-    }
-}
-
-.result-title {
-    font-size: 36px;
+    pointer-events: none;
+    min-width: min(70vw, 280px);
+    padding: clamp(16px, 3vw, 24px) clamp(20px, 5vw, 52px);
+    box-sizing: border-box;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    background: rgba(7, 12, 24, 0.88);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
+    direction: rtl;
+    text-align: center;
+    white-space: nowrap;
+    font-size: clamp(30px, 7vw, 92px);
     font-weight: 900;
-    margin-bottom: 15px;
-    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transform: translate(-50%, -50%);
+    animation: resultMessageFade 0.9s ease-out forwards;
 }
 
-.result-title.success {
+.result-message.success {
     color: var(--success);
     text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
 }
 
-.result-title.fail {
+.result-message.wrong {
     color: var(--danger);
     text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
 }
 
-.result-title.timeout {
-    color: var(--accent);
-    text-shadow: 0 0 20px rgba(255, 184, 0, 0.5);
-}
-
-.result-verse {
-    font-family: var(--font-quran);
-    font-size: 26px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 25px;
-    padding: 20px 30px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 16px;
-    direction: rtl;
-    text-align: center;
-    max-width: 90%;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-.result-score {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--accent);
-    padding: 8px 20px;
-    background: rgba(255, 184, 0, 0.1);
-    border-radius: 30px;
-    border: 1px solid rgba(255, 184, 0, 0.3);
-}
-
-/* ===== LEVEL COMPLETE (VICTORY SCREEN) ===== */
-#game-over {
-    background: radial-gradient(circle at center, rgba(15, 23, 42, 0.9), rgba(10, 15, 28, 1));
-    backdrop-filter: blur(20px);
-}
-
-#game-over .final-score {
-    font-size: 72px;
-    font-weight: 900;
-    background: linear-gradient(135deg, var(--accent), #fff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin: 15px 0;
-    filter: drop-shadow(0 0 20px rgba(255, 184, 0, 0.4));
-}
-
-.level-complete-stars {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.lc-star {
-    font-size: 55px;
-    transition: all 0.3s ease;
-    opacity: 0.2;
-    filter: grayscale(1);
-}
-
-.lc-star.earned {
-    opacity: 1;
-    filter: grayscale(0) drop-shadow(0 0 20px rgba(255, 184, 0, 0.8));
-    animation: starPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-.lc-star:nth-child(2).earned {
-    animation-delay: 0.2s;
-}
-
-.lc-star:nth-child(3).earned {
-    animation-delay: 0.4s;
-}
-
-@keyframes starPop {
+@keyframes resultMessageFade {
     0% {
-        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
     }
 
     100% {
-        transform: scale(1) rotate(0deg);
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
     }
 }
 
@@ -763,96 +749,60 @@ body {
 
 @media (max-width: 600px) {
     .game-title {
-        font-size: 34px;
+        font-size: clamp(30px, 9vw, 38px);
     }
 
     .verse-text {
-        font-size: 28px;
+        font-size: clamp(23px, 7vw, 30px);
     }
 
     .verse-area {
-        top: 90px;
-        padding: 15px;
-    }
-
-    .falling-star {
-        width: 130px;
-        height: 60px;
+        top: 82px;
+        padding: 12px 10px;
     }
 
     .star-text {
-        font-size: 20px;
+        font-size: clamp(13px, 4vw, 20px);
     }
 
     .options-area {
         top: 0;
-        bottom: 150px;
+        bottom: 132px;
+        left: 4px;
+        right: 4px;
     }
 
     .train-container {
-        width: 85vw;
+        width: max-content;
     }
 
     .custom-track {
-        height: 25vh;
-        bottom: -2vh;
+        height: 30vh;
+        bottom: -4vh;
     }
 
     .train-area {
         bottom: 6vh;
-        height: 20vh;
+        height: 23vh;
     }
 }
 
-/* ===== ROTATE DEVICE OVERLAY ===== */
-.rotate-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: var(--space-darker);
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: var(--primary);
-    padding: 20px;
-}
-
-.rotate-overlay .rotate-icon {
-    font-size: 60px;
-    margin-bottom: 20px;
-    animation: rotatePhone 2s ease-in-out infinite;
-}
-
-.rotate-overlay h2 {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #fff;
-}
-
-.rotate-overlay p {
-    font-size: 18px;
-    color: var(--text-secondary);
-}
-
-@keyframes rotatePhone {
-    0% {
-        transform: rotate(0deg);
+@media (max-height: 620px) and (orientation: landscape) {
+    .verse-area {
+        top: 72px;
+        padding: 8px 18px;
     }
 
-    50% {
-        transform: rotate(90deg);
+    .verse-text {
+        font-size: clamp(20px, 4.5vh, 30px);
     }
 
-    100% {
-        transform: rotate(90deg);
+    .options-area {
+        bottom: 96px;
     }
-}
 
-@media screen and (max-width: 900px) and (orientation: portrait) {
-    .rotate-overlay {
-        display: flex;
+    .train-area {
+        bottom: 3vh;
+        height: 28vh;
     }
 }

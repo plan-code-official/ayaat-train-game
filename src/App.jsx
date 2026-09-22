@@ -1,6 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import daddcoinImg from './assets/daddcoin.webp';
+import train1Img from '../Trian1.png';
+import train2Img from '../Trian2.png';
+import train3Img from '../Trian3.png';
+import boxImg from '../Box.png';
+import Celebration from './Celebration/Celebration';
+import ResultsPanel from './ResultsPanel/ResultsPanel';
 
 // React createElement helper for SVGs
 const b = {
@@ -233,7 +239,7 @@ const playSFX = (type, isMuted) => {
 };
 
 export default function App() {
-  const [screen, setScreen] = useState('name'); // name, game, complete
+  const [screen, setScreen] = useState('name'); // name, game, celebration, complete
   const [playerName, setPlayerName] = useState('');
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
@@ -242,7 +248,7 @@ export default function App() {
   const [trainX, setTrainX] = useState(50);
   const [stars, setStars] = useState([]);
   const [isAnswerLocked, setIsAnswerLocked] = useState(false);
-  const [resultOverlay, setResultOverlay] = useState(null);
+  const [resultMessage, setResultMessage] = useState(null);
   const [particles, setParticles] = useState([]);
 
   // API State
@@ -252,46 +258,43 @@ export default function App() {
   const [sessionId, setSessionId] = useState(null);
   const [sessionToken, setSessionToken] = useState(null);
   const [answersList, setAnswersList] = useState([]);
-  const [questionStartTime, setQuestionStartTime] = useState(0);
   const [victoryData, setVictoryData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const timerDeadlineRef = useRef(0);
+  const timerStartedAtRef = useRef(0);
+  const roundCompletionRef = useRef(false);
+  const lastDisplayedTimeRef = useRef(null);
+
+  const handleCelebrationComplete = useCallback(() => {
+    setScreen('complete');
+  }, []);
 
   const containerRef = useRef(null);
   const timerRef = useRef(null);
   const animationRef = useRef(0);
-  const trainAudioRef = useRef(null);
   const questionAudioRef = useRef(null);
+  const trainCarRefs = useRef([]);
+  const resultMessageTimeoutRef = useRef(null);
+  const isTouchDraggingRef = useRef(false);
+  const touchPointerIdRef = useRef(null);
 
-  // Train sound interval
-  useEffect(() => {
-    if (screen !== 'game' || isMuted) return;
+  const showResultMessage = (text, type) => {
+    if (resultMessageTimeoutRef.current) {
+      clearTimeout(resultMessageTimeoutRef.current);
+    }
+    setResultMessage({ text, type });
+    resultMessageTimeoutRef.current = setTimeout(() => {
+      setResultMessage(null);
+      resultMessageTimeoutRef.current = null;
+    }, 900);
+  };
 
-    const playTrainSound = () => {
-      if (questionAudioRef.current && !questionAudioRef.current.paused) {
-        return;
-      }
-      if (!trainAudioRef.current) {
-        trainAudioRef.current = new Audio('/trainSound.mpeg');
-      }
-      trainAudioRef.current.volume = 0.4;
-      trainAudioRef.current.play().catch(e => console.log(e));
-    };
-
-    // Small delay to allow question audio to start if it exists
-    const initialTimeout = setTimeout(() => {
-      playTrainSound();
-    }, 500);
-
-    const interval = setInterval(playTrainSound, 7000);
-    return () => {
-      clearTimeout(initialTimeout);
-      clearInterval(interval);
-      if (trainAudioRef.current) {
-        trainAudioRef.current.pause();
-        trainAudioRef.current.currentTime = 0;
-      }
-    };
-  }, [screen, isMuted]);
+  useEffect(() => () => {
+    if (resultMessageTimeoutRef.current) {
+      clearTimeout(resultMessageTimeoutRef.current);
+    }
+  }, []);
 
   // Question audio
   useEffect(() => {
@@ -301,11 +304,6 @@ export default function App() {
 
     if (questionAudioRef.current) {
       questionAudioRef.current.pause();
-    }
-    
-    if (trainAudioRef.current && !trainAudioRef.current.paused) {
-      trainAudioRef.current.pause();
-      trainAudioRef.current.currentTime = 0;
     }
 
     questionAudioRef.current = new Audio(roundData.audioUrl);
@@ -321,6 +319,53 @@ export default function App() {
   useEffect(() => {
     fetchQuestions();
   }, []);
+
+  const getTrain2Rect = () => {
+    if (!containerRef.current) return null;
+    const train2 = trainCarRefs.current[1];
+    if (!train2) return null;
+
+    const trainRect = train2.getBoundingClientRect();
+    const containerRect = containerRef.current.getBoundingClientRect();
+
+    return {
+      left: trainRect.left - containerRect.left,
+      right: trainRect.right - containerRect.left,
+      top: trainRect.top - containerRect.top,
+      bottom: trainRect.bottom - containerRect.top,
+      width: trainRect.width,
+      height: trainRect.height
+    };
+  };
+
+  const getTrain2CatchOffset = (star) => {
+    const train2 = trainCarRefs.current[1];
+    const answerNode = document.getElementById(`falling-star-${star.id}`);
+    if (!train2 || !answerNode) return { x: 0, y: 0 };
+
+    const trainRect = train2.getBoundingClientRect();
+    const answerRect = answerNode.getBoundingClientRect();
+
+    return {
+      x: (trainRect.left + trainRect.width / 2) - (answerRect.left + answerRect.width / 2),
+      y: (trainRect.top + trainRect.height / 2) - (answerRect.top + answerRect.height / 2)
+    };
+  };
+
+  const intersectsTrain2 = (star) => {
+    const trainRect = getTrain2Rect();
+    const answerNode = document.getElementById(`falling-star-${star.id}`);
+    if (!trainRect || !answerNode || !containerRef.current) return false;
+
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const answerRect = answerNode.getBoundingClientRect();
+    const answerLeft = answerRect.left - containerRect.left;
+    const answerRight = answerRect.right - containerRect.left;
+    const answerTop = answerRect.top - containerRect.top;
+    const answerBottom = answerRect.bottom - containerRect.top;
+
+    return answerRight > trainRect.left && answerLeft < trainRect.right && answerBottom > trainRect.top && answerTop < trainRect.bottom;
+  };
 
   const fetchQuestions = async () => {
     setIsLoading(true);
@@ -434,9 +479,27 @@ export default function App() {
 
   const roundData = apiQuestions[currentRound] || {};
   const currentLevel = Math.floor(currentRound / 4) + 1;
+  const correctAnswers = answersList.filter(answer => answer.selectedAnswer !== 'TIMEOUT' && answer.selectedAnswer !== '').length;
+  const wrongAnswers = Math.max(0, apiQuestions.length - correctAnswers);
 
   const handlePointerMove = (e) => {
     if (screen !== 'game' || isAnswerLocked) return;
+    if (e.pointerType === 'touch' && !isTouchDraggingRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    let x = ((e.clientX - rect.left) / rect.width) * 100;
+    if (e.pointerType === 'touch') {
+      x = Math.max(-35, Math.min(x, 135));
+    } else {
+      x = Math.max(0, Math.min(x, 100));
+    }
+    setTrainX(x);
+  };
+
+  const handlePointerDown = (e) => {
+    if (screen !== 'game' || isAnswerLocked) return;
+    if (e.pointerType === 'touch') return;
     const container = containerRef.current;
     if (!container) return;
     const rect = container.getBoundingClientRect();
@@ -445,14 +508,20 @@ export default function App() {
     setTrainX(x);
   };
 
-  const handlePointerDown = (e) => {
-    if (screen !== 'game' || isAnswerLocked) return;
-    const container = containerRef.current;
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    let x = ((e.clientX - rect.left) / rect.width) * 100;
-    x = Math.max(0, Math.min(x, 100));
-    setTrainX(x);
+  const handleTrainTouchStart = (e) => {
+    if (e.pointerType !== 'touch' || screen !== 'game' || isAnswerLocked) return;
+    isTouchDraggingRef.current = true;
+    touchPointerIdRef.current = e.pointerId;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+    handlePointerMove(e);
+  };
+
+  const handleTrainTouchEnd = (e) => {
+    if (e.pointerId !== touchPointerIdRef.current) return;
+    isTouchDraggingRef.current = false;
+    touchPointerIdRef.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
   };
 
   const handleLoginSubmit = (e) => {
@@ -466,14 +535,24 @@ export default function App() {
   };
 
   const startRound = (roundIdx) => {
+    clearInterval(timerRef.current);
+    timerRef.current = null;
     setIsAnswerLocked(false);
-    setResultOverlay(null);
+    setResultMessage(null);
+    if (resultMessageTimeoutRef.current) {
+      clearTimeout(resultMessageTimeoutRef.current);
+      resultMessageTimeoutRef.current = null;
+    }
     setTrainX(50);
-    setQuestionStartTime(Date.now());
+    const startedAt = Date.now();
+    timerStartedAtRef.current = startedAt;
+    roundCompletionRef.current = false;
 
     let rData = apiQuestions[roundIdx];
     let lvl = Math.floor(roundIdx / 4) + 1;
     let timeLimit = lvl === 1 ? 45 : lvl === 2 ? 35 : 30;
+    timerDeadlineRef.current = startedAt + timeLimit * 1000;
+    lastDisplayedTimeRef.current = timeLimit;
     setTimeLeft(timeLimit);
 
     let items = rData.options.map((opt, idx) => {
@@ -489,31 +568,64 @@ export default function App() {
         y: -10 - (idx * 22),
         speed: (lvl === 1 ? 0.15 : lvl === 2 ? 0.20 : 0.25) + Math.random() * 0.05,
         isCorrect: opt === rData.answer,
-        status: 'falling'
+        status: 'falling',
+        scale: 1
       };
     });
     setStars(items);
   };
 
-  // Timer countdown
+  const handleRetry = () => {
+    playSFX('click', isMuted);
+    setCurrentRound(0);
+    setScore(0);
+    setAnswersList([]);
+    setVictoryData(null);
+    setScreen('game');
+    startRound(0);
+  };
+
+  const handleResultsBack = () => {
+    playSFX('click', isMuted);
+    setVictoryData(null);
+    setPlayerName('');
+    setScreen('name');
+  };
+
+  // Timer countdown uses the wall clock so it stays accurate when rendering is delayed.
   useEffect(() => {
     if (screen !== 'game' || isAnswerLocked) return;
-    timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(timerRef.current);
-          handleTimeout();
-          return 0;
-        }
-        if (t <= 11) {
+
+    const updateTimer = () => {
+      if (roundCompletionRef.current || !timerDeadlineRef.current) return;
+
+      const remainingMs = timerDeadlineRef.current - Date.now();
+      const nextTime = Math.max(0, Math.ceil(remainingMs / 1000));
+      const previousTime = lastDisplayedTimeRef.current;
+
+      if (nextTime !== previousTime) {
+        lastDisplayedTimeRef.current = nextTime;
+        setTimeLeft(nextTime);
+        if (nextTime < previousTime && nextTime <= 11) {
           playSFX('warning', isMuted);
         }
-        return t - 1;
-      });
-    }, 1000);
+      }
+
+      if (remainingMs <= 0) {
+        roundCompletionRef.current = true;
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+        setTimeLeft(0);
+        handleTimeout(true);
+      }
+    };
+
+    updateTimer();
+    timerRef.current = setInterval(updateTimer, 100);
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     };
   }, [screen, isAnswerLocked, currentRound]);
 
@@ -523,11 +635,17 @@ export default function App() {
 
     const updatePhysics = () => {
       setStars(list => {
+        const collided = list.find(star => star.status === 'falling' && intersectsTrain2(star));
+        if (collided) {
+          triggerSelection(collided);
+          return list;
+        }
+
         return list.map(star => {
           if (star.status === 'falling') {
             let nextY = star.y + star.speed;
 
-            if (nextY > 85) {
+            if (nextY > 105) {
               return { ...star, y: -10 };
             }
             return { ...star, y: nextY };
@@ -544,9 +662,14 @@ export default function App() {
   }, [screen, isAnswerLocked, trainX, currentRound, apiQuestions]);
 
   const submitGameSession = async (finalAnswers) => {
-    setIsSubmitting(true);
-    setScreen('complete');
-    playSFX('win', isMuted);
+    const answeredCount = finalAnswers.filter(
+      answer => answer.selectedAnswer !== 'TIMEOUT' && answer.selectedAnswer !== ''
+    ).length;
+    const shouldCelebrate = answeredCount > 0;
+
+    setIsSubmitting(shouldCelebrate);
+    setScreen(shouldCelebrate ? 'celebration' : 'complete');
+    if (shouldCelebrate) playSFX('win', isMuted);
 
     if (!sessionId || !sessionToken) {
       setIsSubmitting(false);
@@ -588,7 +711,7 @@ export default function App() {
   };
 
   const finishRound = (isCorrect, selectedAnswerText) => {
-    const timeTaken = Math.max(1, Math.floor((Date.now() - questionStartTime) / 1000));
+    const timeTaken = Math.max(1, Math.floor((Date.now() - timerStartedAtRef.current) / 1000));
     const currentQ = apiQuestions[currentRound];
 
     const newAnswer = {
@@ -617,60 +740,53 @@ export default function App() {
         setCurrentRound(nextIdx);
         startRound(nextIdx);
       }
-    }, 2200);
+    }, 700);
   };
 
   const triggerSelection = (star) => {
+    if (!star || isAnswerLocked || roundCompletionRef.current || star.status === 'caught') return;
+    roundCompletionRef.current = true;
     setIsAnswerLocked(true);
-    if (timerRef.current) clearInterval(timerRef.current);
+    clearInterval(timerRef.current);
+    timerRef.current = null;
+    const catchOffset = getTrain2CatchOffset(star);
+
+    setStars(list => list.map(s => s.id === star.id ? {
+      ...s,
+      status: 'caught',
+      catchOffset
+    } : s));
 
     if (star.isCorrect) {
-      playSFX('correct', isMuted);
-      setScore(s => s + 1);
-      createParticles(star.x, 80);
+      setTimeout(() => {
+        playSFX('correct', isMuted);
+        setScore(s => s + 1);
+        createParticles(star.x, 80);
 
-      setResultOverlay({
-        status: 'success',
-        text: 'أحسنت! إجابة صحيحة',
-        scoreChange: '+١ نقطة'
-      });
+        showResultMessage('أحسنت', 'success');
 
-      finishRound(true, star.text);
+        finishRound(true, star.text);
+      }, 220);
     } else {
-      playSFX('wrong', isMuted);
-      setScore(s => s); // no deduction when score is only 1 point
+      setTimeout(() => {
+        playSFX('wrong', isMuted);
+        setScore(s => s);
+        showResultMessage('خطأ', 'wrong');
 
-      setStars(list => list.map(s => s.id === star.id ? { ...s, status: 'disabled' } : s));
-      setIsAnswerLocked(false);
-
-      // Resume timer
-      let lvl = Math.floor(currentRound / 4) + 1;
-      let timeLimit = lvl === 1 ? 45 : lvl === 2 ? 35 : 30;
-      timerRef.current = setInterval(() => {
-        setTimeLeft(t => {
-          if (t <= 1) {
-            clearInterval(timerRef.current);
-            handleTimeout();
-            return 0;
-          }
-          if (t <= 11) {
-            playSFX('warning', isMuted);
-          }
-          return t - 1;
-        });
-      }, 1000);
+        setStars(list => list.map(s => s.id === star.id ? { ...s, status: 'disabled' } : s));
+        setIsAnswerLocked(false);
+        roundCompletionRef.current = false;
+      }, 220);
     }
   };
 
-  const handleTimeout = () => {
+  const handleTimeout = (fromTimer = false) => {
+    if (roundCompletionRef.current && !fromTimer) return;
+    roundCompletionRef.current = true;
     setIsAnswerLocked(true);
+    clearInterval(timerRef.current);
+    timerRef.current = null;
     playSFX('timeout', isMuted);
-
-    setResultOverlay({
-      status: 'timeout',
-      text: 'انتهى الوقت!',
-      scoreChange: 'لم تحصل على نقاط'
-    });
 
     finishRound(false, "TIMEOUT");
   };
@@ -717,12 +833,6 @@ export default function App() {
 
   return (
     <div id="game-container" ref={containerRef} onPointerMove={handlePointerMove} onPointerDown={handlePointerDown}>
-      <div className="rotate-overlay">
-        <div className="rotate-icon">📱</div>
-        <h2>يرجى تدوير الشاشة</h2>
-        <p>هذه اللعبة مصممة للعمل في الوضع الأفقي للحصول على أفضل تجربة</p>
-      </div>
-
       <div className="custom-bg" style={{ backgroundImage: 'url(/bg.png)' }} />
 
       <div className={`sound-toggle ${isMuted ? 'muted' : ''}`} onClick={() => setIsMuted(!isMuted)}>
@@ -753,7 +863,7 @@ export default function App() {
         </div>
       )}
 
-      {screen === 'game' && roundData && (
+      {(screen === 'game' || screen === 'complete') && roundData && (
         <div className="screen" id="game-screen">
           <div className="game-hud">
             <div className={`hud-item hud-timer ${timeLeft <= 10 ? 'warning' : ''}`} id="hud-timer">
@@ -784,12 +894,21 @@ export default function App() {
           <div className="options-area">
             {stars.map(star => {
               if (star.status === 'disabled') return null;
+              const isCaught = star.status === 'caught';
               return (
                 <div
                   key={star.id}
-                  id={`star-${star.id}`}
-                  className={`falling-star ${star.status === 'correct' ? 'correct' : ''} ${star.status === 'wrong' ? 'wrong' : ''}`}
-                  style={{ left: `max(10px, min(${star.x}%, calc(100vw - 390px)))`, top: `${star.y}%` }}
+                  id={`falling-star-${star.id}`}
+                  className={`falling-star ${star.status === 'correct' ? 'correct' : ''} ${star.status === 'wrong' ? 'wrong' : ''} ${isCaught ? 'caught' : ''}`}
+                  style={{
+                    left: `${star.x}%`,
+                    top: `${star.y}%`,
+                    transform: `scale(${star.scale || 1})`,
+                    '--catch-x': `${star.catchOffset?.x || 0}px`,
+                    '--catch-y': `${star.catchOffset?.y || 0}px`,
+                    backgroundImage: `url(${boxImg})`,
+                    pointerEvents: isCaught ? 'none' : 'auto'
+                  }}
                   onClick={() => triggerSelection(star)}
                 >
                   <svg className="star-shape" viewBox="0 0 24 24">
@@ -820,54 +939,69 @@ export default function App() {
           ))}
 
           <div className="train-area">
-            <div id="train-hitbox" className="train-container" style={{ left: `${trainX}%`, transform: 'translateX(-50%)', display: 'flex', gap: '0' }}>
-              <img src="/train_new.png" alt="train" className="custom-train-img" style={{ width: '50%' }} />
+            <div
+              id="train-hitbox"
+              className="train-container"
+              style={{ left: `${trainX}%`, transform: 'translateX(-50%)', display: 'flex', gap: '0' }}
+              onPointerDown={handleTrainTouchStart}
+              onPointerUp={handleTrainTouchEnd}
+              onPointerCancel={handleTrainTouchEnd}
+              onLostPointerCapture={handleTrainTouchEnd}
+            >
+              <div className="train-composite" aria-label="train">
+                <img
+                  ref={(el) => { trainCarRefs.current[0] = el; }}
+                  src={train1Img}
+                  alt="train part 1"
+                  className="train-part train-part-1"
+                />
+                <img
+                  ref={(el) => { trainCarRefs.current[1] = el; }}
+                  src={train2Img}
+                  alt="train part 2"
+                  className="train-part train-part-2"
+                />
+                <img
+                  ref={(el) => { trainCarRefs.current[2] = el; }}
+                  src={train3Img}
+                  alt="train part 3"
+                  className="train-part train-part-3"
+                />
+              </div>
             </div>
           </div>
 
-          {resultOverlay && (
-            <div className="result-overlay">
-              <div className="result-icon">{resultOverlay.status === 'success' ? '✅' : resultOverlay.status === 'timeout' ? '⏰' : '❌'}</div>
-              <div className={`result-title ${resultOverlay.status === 'success' ? 'success' : 'fail'}`}>{resultOverlay.text}</div>
-              <div className="result-verse">{roundData.verseBefore}: {roundData.answer}</div>
-              <div className="result-score">{resultOverlay.scoreChange}</div>
+          {resultMessage && (
+            <div className={`result-message ${resultMessage.type}`} role="status" aria-live="polite">
+              {resultMessage.text}
             </div>
           )}
         </div>
       )}
 
       {screen === 'complete' && (
-        <div className="screen" id="game-over">
-          {isSubmitting ? (
-            <div style={{ textAlign: 'center', color: '#fff', fontSize: '24px' }}>
-              جاري إرسال النتائج...
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center' }}>
-              <div className="result-icon">🏆</div>
-              <div className="result-title success" id="final-title">مُبارَك</div>
-              <div className="final-score" id="final-score">{toArabicNum(victoryData?.score || score)}</div>
-              <div className="level-score-detail">النتيجة النهائية الكلية</div>
-
-              <div className="level-complete-stars" id="final-stars" style={{ display: 'flex', gap: '10px', justifyContent: 'center', margin: '20px 0' }}>
-                <span className={`lc-star ${(victoryData?.stars || 0) >= 1 ? 'earned' : ''}`}>⭐</span>
-                <span className={`lc-star ${(victoryData?.stars || 0) >= 2 ? 'earned' : ''}`}>⭐</span>
-                <span className={`lc-star ${(victoryData?.stars || 0) >= 3 ? 'earned' : ''}`}>⭐</span>
-              </div>
-
-              {victoryData?.coins > 0 && (
-                <div style={{ color: '#fbbf24', fontSize: '18px', margin: '10px 0' }}>
-                  حصلت على {toArabicNum(victoryData.coins)} 🪙 كوينز!
-                </div>
-              )}
-
-              <button className="btn btn-accent" onClick={() => { setScreen('name'); setPlayerName(''); }} style={{ marginTop: '15px' }}>
-                🔄 العب مرة أخرى
-              </button>
-            </div>
-          )}
-        </div>
+        isSubmitting ? (
+          <div className="results-overlay" style={{ textAlign: 'center', color: '#fff', fontSize: '24px' }}>
+            جاري إرسال النتائج...
+          </div>
+        ) : (
+          <ResultsPanel
+            score={victoryData?.score ?? score}
+            totalScore={100}
+            correctAnswers={correctAnswers}
+            wrongAnswers={wrongAnswers}
+            coins={victoryData?.coins ?? 0}
+            onRetry={handleRetry}
+            onBack={handleResultsBack}
+          />
+        )
       )}
+
+      <Celebration
+        isVisible={screen === 'celebration'}
+        muted={isMuted}
+        onComplete={handleCelebrationComplete}
+      />
     </div>
   );
 }
