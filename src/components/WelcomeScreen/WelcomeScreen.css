@@ -1,0 +1,187 @@
+.welcome-screen-new {
+  direction: rtl;
+  height: 100dvh;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  background: radial-gradient(circle at center, #113645, #08171d);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+/* --- Header Section --- */
+.welcome-stats-header {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.welcome-stats-bg {
+  direction: ltr; /* Force LTR inside so QuestionCoin stays left and DaddCoin stays right */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('../../assets/QuestionNumber.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 10px 20px;
+  min-width: 150px;
+  height: 50px;
+  gap: 8px;
+}
+
+.stats-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.stats-text {
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+.text-yellow {
+  color: #ffd700;
+}
+
+.stats-separator {
+  color: #fff;
+  font-weight: bold;
+  margin: 0 4px;
+}
+
+/* --- Body Section --- */
+.welcome-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 60px; /* Buffer space for the absolute header */
+}
+
+.welcome-description-img {
+  max-width: 600px;
+  width: 90%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* --- Footer / Button Section --- */
+.welcome-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+}
+
+.welcome-error {
+  color: #ff6b6b;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.welcome-start-button {
+  background-image: url('../../assets/startButton.png');
+  background-size: 100% 100%;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  width: 200px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 12px; /* Push text up slightly to center over button graphic */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  transition: transform 0.2s ease;
+  font-family: inherit;
+}
+
+.welcome-start-button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.welcome-start-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  font-size: 20px;
+}
+
+/* =========================================
+   RESPONSIVENESS RULES
+   ========================================= */
+
+/* Rule 2: Mobile Portrait/General Touch Devices */
+@media (pointer: coarse), (max-width: 950px) {
+  .welcome-description-img {
+    max-width: 400px;
+    width: 90%;
+    max-height: none;
+  }
+}
+
+/* Rule 1: Mobile Landscape */
+@media (max-width: 900px) and (max-height: 500px) {
+  .welcome-screen-new {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .welcome-stats-header {
+    position: static;
+    align-self: flex-start; /* In RTL flex-direction:column, flex-start is the right edge */
+    margin-bottom: 10px;
+  }
+
+  .welcome-stats-bg {
+    height: 40px;
+    min-width: 120px;
+    padding: 5px 15px;
+  }
+
+  .stats-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .stats-text {
+    font-size: 16px;
+  }
+
+  .welcome-body {
+    margin-top: 0;
+  }
+
+  .welcome-description-img {
+    max-height: 250px;
+    width: auto;
+    max-width: 90%;
+  }
+
+  .welcome-start-button {
+    width: 160px;
+    height: 60px;
+    font-size: 22px;
+    padding-bottom: 8px;
+  }
+}

@@ -7,6 +7,7 @@ import train3Img from '../Trian3.png';
 import boxImg from '../Box.png';
 import Celebration from './Celebration/Celebration';
 import ResultsPanel from './ResultsPanel/ResultsPanel';
+import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
 
 // React createElement helper for SVGs
 const b = {
@@ -842,25 +843,12 @@ export default function App() {
       <div className="custom-track" style={{ backgroundImage: 'url(/track.png)' }} />
 
       {screen === 'name' && (
-        <div className="screen" id="name-screen">
-          <div className="menu-content" style={{ width: '320px', maxWidth: '90%' }}>
-            <div className="game-logo"><span className="train-emoji">🚂</span></div>
-            <h1 className="game-title">قطار الأسئلة الدينية</h1>
-            <div className="glass-panel-box" style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '20px',
-              padding: '24px 20px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '15px',
-              marginTop: '10px'
-            }}>
-              <button className="btn btn-primary" onClick={handleLoginSubmit} style={{ width: '100%', padding: '12px 20px', fontSize: '16px' }}>ابدأ اللعب 🚀</button>
-            </div>
-          </div>
-        </div>
+        <WelcomeScreen 
+          questionsCount={apiQuestions.length || Object.keys(GAME_DATA).length}
+          onStart={(e) => handleLoginSubmit(e || { preventDefault: () => {} })}
+          isLoading={isLoading}
+          error={error}
+        />
       )}
 
       {(screen === 'game' || screen === 'complete') && roundData && (
