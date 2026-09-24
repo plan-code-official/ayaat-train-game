@@ -8,7 +8,7 @@ import boxImg from '../Box.png';
 import Celebration from './Celebration/Celebration';
 import ResultsPanel from './ResultsPanel/ResultsPanel';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
-
+ 
 // React createElement helper for SVGs
 const b = {
   jsx: (tag, props) => {
