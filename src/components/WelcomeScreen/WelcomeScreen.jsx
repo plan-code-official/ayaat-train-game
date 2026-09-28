@@ -1,10 +1,11 @@
-import React from 'react';
-import './WelcomeScreen.css';
+﻿import React from 'react';
+import GameWelcomeScreen from '../GameWelcomeScreen/GameWelcomeScreen';
 
 import QuestionCoin from '../../assets/QuestionCoin.png';
 import QuestionNumber from '../../assets/QuestionNumber.png';
 import description from '../../assets/description.png';
-import startButton from '../../assets/startButton.png';
+import startButtonBg from '../../assets/start_transparent.png';
+import exitButtonBg from '../../assets/exit_transparent.png';
 import daddcoin from '../../assets/daddcoin.webp';
 
 const WelcomeScreen = ({ 
@@ -14,37 +15,25 @@ const WelcomeScreen = ({
   error = null 
 }) => {
   const daddPoints = questionsCount * 1;
+  const isReady = questionsCount > 0 && !error;
 
   return (
-    <div className="welcome-screen-new">
-      <div className="welcome-stats-header">
-        <div className="welcome-stats-bg">
-          <img src={QuestionCoin} alt="Question" className="stats-icon left-icon" />
-          <span className="stats-text">{questionsCount}</span>
-          <span className="stats-separator">{'>'}</span>
-          <span className="stats-text text-yellow">{daddPoints}</span>
-          <img src={daddcoin} alt="Daddcoin" className="stats-icon right-icon" />
-        </div>
-      </div>
-
-      <div className="welcome-body">
-        <img src={description} alt="How to Play" className="welcome-description-img" />
-      </div>
-
-      <div className="welcome-footer">
-        {error ? (
-          <div className="welcome-error">{error}</div>
-        ) : (
-          <button 
-            className="welcome-start-button" 
-            onClick={onStart} 
-            disabled={isLoading || questionsCount === 0}
-          >
-            {isLoading ? 'جاري تحميل الأسئلة...' : 'ابدَأ!'}
-          </button>
-        )}
-      </div>
-    </div>
+    <GameWelcomeScreen
+      statsBgImage={QuestionNumber}
+      statLeftIcon={QuestionCoin}
+      statLeftAlt="Questions"
+      statLeftValue={questionsCount}
+      statRightValue={daddPoints}
+      statRightIcon={daddcoin}
+      statRightAlt="Points"
+      heroImage={description}
+      heroAlt="How to Play"
+      startButtonImage={startButtonBg}
+      exitButtonImage={exitButtonBg}
+      onStart={onStart}
+      isLoading={isLoading}
+      isReady={isReady}
+    />
   );
 };
 

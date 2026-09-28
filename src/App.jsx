@@ -836,9 +836,7 @@ export default function App() {
     <div id="game-container" ref={containerRef} onPointerMove={handlePointerMove} onPointerDown={handlePointerDown}>
       <div className="custom-bg" style={{ backgroundImage: 'url(/bg.png)' }} />
 
-      <div className={`sound-toggle ${isMuted ? 'muted' : ''}`} onClick={() => setIsMuted(!isMuted)}>
-        {isMuted ? '🔇' : '🔊'}
-      </div>
+      
 
       <div className="custom-track" style={{ backgroundImage: 'url(/track.png)' }} />
 
