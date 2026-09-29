@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import daddcoinImg from './assets/daddcoin.webp';
+import exitButtonImg from './assets/ExitButton.svg';
 import train1Img from '../Trian1.png';
 import train2Img from '../Trian2.png';
 import train3Img from '../Trian3.png';
@@ -851,24 +852,26 @@ export default function App() {
 
       {(screen === 'game' || screen === 'complete') && roundData && (
         <div className="screen" id="game-screen">
-          <div className="game-hud">
-            <div className={`hud-item hud-timer ${timeLeft <= 10 ? 'warning' : ''}`} id="hud-timer">
-              <span className="hud-icon">⏱️</span>
-              <span>{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+          <header className="ayat-game-header" dir="ltr">
+            <div className="ayat-game-header__main">
+              <div className="ayat-game-header__left">
+                <div className="ayat-game-header__coins" aria-label={`النقاط: ${score}`}>
+                  <img src={daddcoinImg} alt="" />
+                  <strong>{score}</strong>
+                </div>
+              </div>
+              <div className="ayat-game-header__question" dir="rtl">
+                <span>السؤال</span>
+                <strong dir="ltr">{Math.min(currentRound + 1, apiQuestions.length)}/{apiQuestions.length}</strong>
+              </div>
+              <button className="ayat-game-header__exit" type="button" onClick={() => setScreen('name')} aria-label="خروج إلى الرئيسية">
+                <img src={exitButtonImg} alt="" />
+              </button>
             </div>
-            <div className="hud-item hud-level">
-              السؤال {toArabicNum(currentRound + 1)} من {toArabicNum(apiQuestions.length)}
+            <div className="ayat-game-header__progress" role="progressbar" aria-valuemin={0} aria-valuemax={apiQuestions.length} aria-valuenow={currentRound + 1}>
+              <span style={{ width: `${apiQuestions.length ? (Math.min(currentRound + 1, apiQuestions.length) / apiQuestions.length) * 100 : 0}%` }} />
             </div>
-            <div className="hud-item hud-score">
-              <span style={{ marginLeft: '8px', fontWeight: '600', fontSize: '13px', opacity: 0.9, color: '#ffb930' }}>{playerName}</span>
-              <img src={daddcoinImg} alt="coin" style={{ width: '22px', height: '22px', margin: '0 4px' }} />
-              <span>{score}</span>
-            </div>
-          </div>
-
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${(currentRound / apiQuestions.length) * 100}%` }} />
-          </div>
+          </header>
 
           <div className="verse-area">
             <div className="verse-label">سؤال التحدي:</div>
