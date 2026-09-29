@@ -503,9 +503,9 @@ body,
     position: relative;
     display: grid;
     place-items: center;
-    flex: 0 1 auto;
-    max-width: 100%;
-    max-height: 19vh;
+    flex: 0 0 clamp(58px, 12vw, 132px);
+    width: clamp(58px, 12vw, 132px);
+    height: clamp(58px, 12vw, 132px);
     padding: 0;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.45);
@@ -516,10 +516,26 @@ body,
 
 .question-image-preview img {
     display: block;
-    width: auto;
-    max-width: min(76vw, 620px);
-    max-height: 19vh;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
+}
+
+.verse-question-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(7px, 1.5vw, 18px);
+    width: 100%;
+    min-width: 0;
+}
+
+.verse-question-row .verse-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+    overflow-wrap: anywhere;
 }
 
 .question-image-preview span {
@@ -1029,17 +1045,14 @@ body,
     }
 
     .verse-area .verse-text {
-        font-size: clamp(20px, 6vw, 27px);
+        font-size: clamp(17px, 5.2vw, 24px);
         line-height: 1.25;
     }
 
-    .question-image-preview,
-    .question-image-preview img {
-        max-height: 13dvh;
-    }
-
-    .question-image-preview img {
-        max-width: 80vw;
+    .question-image-preview {
+        flex-basis: clamp(54px, 18vw, 78px);
+        width: clamp(54px, 18vw, 78px);
+        height: clamp(54px, 18vw, 78px);
     }
 
     .question-audio-button {
@@ -1096,9 +1109,10 @@ body,
         width: min(85vw, 800px);
     }
 
-    .question-image-preview,
-    .question-image-preview img {
-        max-height: 13dvh;
+    .question-image-preview {
+        flex-basis: 58px;
+        width: 58px;
+        height: 58px;
     }
 
     .ayat-game-header {

@@ -902,20 +902,22 @@ export default function App() {
 
           <div className="verse-area">
             <div className="verse-label">سؤال التحدي:</div>
-            {roundData.verseBefore && <div className="verse-text">
-              {roundData.verseBefore} <span className={`verse-blank ${isAnswerLocked ? 'filled' : ''}`}>{isAnswerLocked ? roundData.answer : '؟'}</span>
-            </div>}
-            {roundData.imageUrl && (
-              <button className="question-image-preview" type="button" onClick={() => setIsQuestionImageOpen(true)} aria-label="عرض صورة السؤال بحجم أكبر">
-                <img src={roundData.imageUrl} alt="صورة السؤال" />
-                <span>اضغط للتكبير</span>
-              </button>
-            )}
-            {roundData.audioUrl && (
-              <button className="question-audio-button" type="button" onClick={playQuestionAudio} aria-label="تشغيل صوت السؤال">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
-              </button>
-            )}
+            <div className="verse-question-row" dir="rtl">
+              {roundData.verseBefore && <div className="verse-text">
+                {roundData.verseBefore} <span className={`verse-blank ${isAnswerLocked ? 'filled' : ''}`}>{isAnswerLocked ? roundData.answer : '؟'}</span>
+              </div>}
+              {roundData.imageUrl && (
+                <button className="question-image-preview" type="button" onClick={() => setIsQuestionImageOpen(true)} aria-label="عرض صورة السؤال بحجم أكبر">
+                  <img src={roundData.imageUrl} alt="صورة السؤال" />
+                  <span>اضغط للتكبير</span>
+                </button>
+              )}
+              {roundData.audioUrl && (
+                <button className="question-audio-button" type="button" onClick={playQuestionAudio} aria-label="تشغيل صوت السؤال">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+                </button>
+              )}
+            </div>
           </div>
 
           {isQuestionImageOpen && roundData.imageUrl && (
