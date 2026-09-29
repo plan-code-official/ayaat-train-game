@@ -252,6 +252,7 @@ export default function App() {
   const [isAnswerLocked, setIsAnswerLocked] = useState(false);
   const [resultMessage, setResultMessage] = useState(null);
   const [particles, setParticles] = useState([]);
+  const [isQuestionImageOpen, setIsQuestionImageOpen] = useState(false);
 
   // API State
   const [apiQuestions, setApiQuestions] = useState([]);
@@ -297,6 +298,15 @@ export default function App() {
       clearTimeout(resultMessageTimeoutRef.current);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isQuestionImageOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setIsQuestionImageOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [isQuestionImageOpen]);
 
   // Question audio
   useEffect(() => {
@@ -456,6 +466,12 @@ export default function App() {
 
           distractors = distractors.slice(0, 3);
           let options = [word, ...distractors].sort(() => Math.random() - 0.5);
+          const optionWithImage = Array.isArray(q.options)
+            ? q.options.find(option => option && typeof option === 'object' && option.imageUrl)
+            : null;
+          const optionWithAudio = Array.isArray(q.options)
+            ? q.options.find(option => option && typeof option === 'object' && option.audioUrl)
+            : null;
 
           return {
             id: q.id || q.questionId || idx,
@@ -464,7 +480,8 @@ export default function App() {
             options: options,
             type: 'quiz',
             surah: 'تحدي',
-            audioUrl: q.audioUrl || q.audio || null
+            audioUrl: q.audioUrl || q.audio || optionWithAudio?.audioUrl || null,
+            imageUrl: q.imageUrl || q.image || optionWithImage?.imageUrl || null
           };
         });
         setApiQuestions(mapped);
@@ -480,6 +497,12 @@ export default function App() {
   };
 
   const roundData = apiQuestions[currentRound] || {};
+  const playQuestionAudio = () => {
+    if (!roundData.audioUrl) return;
+    if (questionAudioRef.current) questionAudioRef.current.pause();
+    questionAudioRef.current = new Audio(roundData.audioUrl);
+    questionAudioRef.current.play().catch(() => {});
+  };
   const currentLevel = Math.floor(currentRound / 4) + 1;
   const correctAnswers = answersList.filter(answer => answer.selectedAnswer !== 'TIMEOUT' && answer.selectedAnswer !== '').length;
   const wrongAnswers = Math.max(0, apiQuestions.length - correctAnswers);
@@ -529,6 +552,10 @@ export default function App() {
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     playSFX('click', isMuted);
+    const isSmallTouchScreen = window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches;
+    if (isSmallTouchScreen && !document.fullscreenElement) {
+      containerRef.current?.requestFullscreen?.().catch(() => {});
+    }
     setScreen('game');
     setCurrentRound(0);
     setScore(0);
@@ -875,10 +902,28 @@ export default function App() {
 
           <div className="verse-area">
             <div className="verse-label">سؤال التحدي:</div>
-            <div className="verse-text">
+            {roundData.verseBefore && <div className="verse-text">
               {roundData.verseBefore} <span className={`verse-blank ${isAnswerLocked ? 'filled' : ''}`}>{isAnswerLocked ? roundData.answer : '؟'}</span>
-            </div>
+            </div>}
+            {roundData.imageUrl && (
+              <button className="question-image-preview" type="button" onClick={() => setIsQuestionImageOpen(true)} aria-label="عرض صورة السؤال بحجم أكبر">
+                <img src={roundData.imageUrl} alt="صورة السؤال" />
+                <span>اضغط للتكبير</span>
+              </button>
+            )}
+            {roundData.audioUrl && (
+              <button className="question-audio-button" type="button" onClick={playQuestionAudio} aria-label="تشغيل صوت السؤال">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+              </button>
+            )}
           </div>
+
+          {isQuestionImageOpen && roundData.imageUrl && (
+            <div className="question-image-lightbox" role="dialog" aria-modal="true" aria-label="صورة السؤال" onClick={() => setIsQuestionImageOpen(false)}>
+              <button className="question-image-lightbox__close" type="button" onClick={() => setIsQuestionImageOpen(false)} aria-label="إغلاق الصورة">×</button>
+              <img src={roundData.imageUrl} alt="صورة السؤال بالحجم الكامل" onClick={event => event.stopPropagation()} />
+            </div>
+          )}
 
           <div className="options-area">
             {stars.map(star => {
