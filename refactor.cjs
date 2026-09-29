@@ -104,7 +104,7 @@ code = code.replace(
 code = code.replace(
   "              <label style={{ fontSize: '16px', fontWeight: '700', color: '#ffb930', textAlign: 'right', display: 'block' }}>أدخل اسم اللاعب البطل:</label>",
   `              {isLoading ? (
-                <div style={{ color: '#fff', fontSize: '20px', textAlign: 'center' }}>جاري التحميل...</div>
+                <div style={{ color: '#fff', fontSize: '20px', textAlign: 'center' }}>تحميل</div>
               ) : error ? (
                 <div style={{ color: '#ef4444', fontSize: '16px', background: 'rgba(0,0,0,0.5)', padding: '15px', borderRadius: '10px', textAlign: 'center' }}>{error}</div>
               ) : (

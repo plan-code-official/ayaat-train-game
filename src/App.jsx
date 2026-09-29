@@ -827,7 +827,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div className="screen" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', fontSize: '24px', fontWeight: 'bold' }} dir="rtl">
-        جاري تحميل اللعبة...
+        تحميل
       </div>
     );
   }
@@ -959,7 +959,9 @@ export default function App() {
 
           {resultMessage && (
             <div className={`result-message ${resultMessage.type}`} role="status" aria-live="polite">
-              {resultMessage.text}
+              <svg className="answer-feedback__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {resultMessage.type === 'success' ? <><circle cx="12" cy="12" r="9" /><path d="m8 12 2.5 2.5L16 9" /></> : <><circle cx="12" cy="12" r="9" /><path d="m9 9 6 6m0-6-6 6" /></>}
+              </svg><span>{resultMessage.text}</span>
             </div>
           )}
         </div>
@@ -968,7 +970,7 @@ export default function App() {
       {screen === 'complete' && (
         isSubmitting ? (
           <div className="results-overlay" style={{ textAlign: 'center', color: '#fff', fontSize: '24px' }}>
-            جاري إرسال النتائج...
+            تحميل
           </div>
         ) : (
           <ResultsPanel
