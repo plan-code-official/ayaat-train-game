@@ -26,6 +26,7 @@ export default function ResultsPanel({
   const wrong = numberValue(wrongAnswers);
   const earnedCoins = numberValue(coins);
   const totalAnswers = correct + wrong;
+  const correctPercent = totalAnswers ? Math.round((correct / totalAnswers) * 100) : 0;
   const isSuccess = totalAnswers > 0 && correct / totalAnswers >= 0.5;
 
   return (
@@ -39,6 +40,11 @@ export default function ResultsPanel({
             ) : (
               <div className="results-panel__fail-title">حاول مرة أخرى!</div>
             )}
+
+            <div className="results-grade" aria-label={`الدرجة ${correctPercent} من 100`}>
+              <span>الدَّرَجَة</span>
+              <strong>{correctPercent}/100</strong>
+            </div>
 
             <div className="results-stats" aria-label="إحصاءات الأداء">
               <div className="results-stat-card results-stat-card--correct">

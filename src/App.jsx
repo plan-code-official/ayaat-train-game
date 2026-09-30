@@ -261,6 +261,7 @@ export default function App() {
   const [sessionId, setSessionId] = useState(null);
   const [sessionToken, setSessionToken] = useState(null);
   const [answersList, setAnswersList] = useState([]);
+  const [answerCounts, setAnswerCounts] = useState({ correct: 0, wrong: 0 });
   const [victoryData, setVictoryData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -504,8 +505,8 @@ export default function App() {
     questionAudioRef.current.play().catch(() => {});
   };
   const currentLevel = Math.floor(currentRound / 4) + 1;
-  const correctAnswers = answersList.filter(answer => answer.selectedAnswer !== 'TIMEOUT' && answer.selectedAnswer !== '').length;
-  const wrongAnswers = Math.max(0, apiQuestions.length - correctAnswers);
+  const correctAnswers = answerCounts.correct;
+  const wrongAnswers = answerCounts.wrong;
 
   const handlePointerMove = (e) => {
     if (screen !== 'game' || isAnswerLocked) return;
@@ -560,6 +561,7 @@ export default function App() {
     setCurrentRound(0);
     setScore(0);
     setAnswersList([]);
+    setAnswerCounts({ correct: 0, wrong: 0 });
     startRound(0);
   };
 
@@ -609,6 +611,7 @@ export default function App() {
     setCurrentRound(0);
     setScore(0);
     setAnswersList([]);
+    setAnswerCounts({ correct: 0, wrong: 0 });
     setVictoryData(null);
     setScreen('game');
     startRound(0);
@@ -691,9 +694,7 @@ export default function App() {
   }, [screen, isAnswerLocked, trainX, currentRound, apiQuestions]);
 
   const submitGameSession = async (finalAnswers) => {
-    const answeredCount = finalAnswers.filter(
-      answer => answer.selectedAnswer !== 'TIMEOUT' && answer.selectedAnswer !== ''
-    ).length;
+    const answeredCount = finalAnswers.length;
     const shouldCelebrate = answeredCount > 0;
 
     setIsSubmitting(shouldCelebrate);
@@ -703,7 +704,7 @@ export default function App() {
     if (!sessionId || !sessionToken) {
       setIsSubmitting(false);
       // Generate some stars based on final answers (mock offline data)
-      const correctCount = finalAnswers.filter(a => a.selectedAnswer !== "TIMEOUT" && a.selectedAnswer !== "").length;
+      const correctCount = finalAnswers.filter(a => a.isCorrect).length;
       const ratio = correctCount / (apiQuestions.length || 1);
       const offlineStars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : ratio > 0 ? 1 : 0;
       setVictoryData({ score: correctCount * 1, stars: offlineStars, coins: 0 });
@@ -718,7 +719,11 @@ export default function App() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${sessionToken}`
         },
-        body: JSON.stringify(finalAnswers)
+        body: JSON.stringify(finalAnswers.map(({ questionId, selectedAnswer, timeTaken }) => ({
+          questionId,
+          selectedAnswer,
+          timeTaken,
+        })))
       });
 
       const completeRes = await fetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/complete`, {
@@ -746,6 +751,7 @@ export default function App() {
     const newAnswer = {
       questionId: currentQ.id,
       selectedAnswer: selectedAnswerText,
+      isCorrect: Boolean(isCorrect),
       timeTaken: timeTaken
     };
 
@@ -787,6 +793,7 @@ export default function App() {
     } : s));
 
     if (star.isCorrect) {
+      setAnswerCounts((counts) => ({ ...counts, correct: counts.correct + 1 }));
       setTimeout(() => {
         playSFX('correct', isMuted);
         setScore(s => s + 1);
@@ -797,6 +804,7 @@ export default function App() {
         finishRound(true, star.text);
       }, 220);
     } else {
+      setAnswerCounts((counts) => ({ ...counts, wrong: counts.wrong + 1 }));
       setTimeout(() => {
         playSFX('wrong', isMuted);
         setScore(s => s);
