@@ -5,7 +5,7 @@ import QuestionCoin from '../../assets/QuestionCoin.png';
 import QuestionNumber from '../../assets/QuestionNumber.png';
 import description from '../../assets/description.png';
 import startButtonBg from '../../assets/start_transparent.png';
-import exitButtonBg from '../../assets/exit_transparent.png';
+import exitButtonBg from '../../assets/Exit1.png';
 import daddcoin from '../../assets/daddcoin.webp';
 
 const WelcomeScreen = ({ 
