@@ -925,8 +925,8 @@ body,
     white-space: nowrap;
     flex-direction: row;
     direction: ltr;
-    font-family: 'Cairo', sans-serif;
-    font-size: clamp(1.65rem, min(4.8vw, 5.5vh), 3rem);
+    font-family: 'Lateef', sans-serif;
+    font-size: clamp(2.1rem, min(6vw, 6.4vh), 3.8rem);
     line-height: 1;
     font-weight: 900;
     transform: translate(-50%, -50%);
