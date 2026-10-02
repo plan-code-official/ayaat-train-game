@@ -19,15 +19,18 @@ export default function ResultsPanel({
   correctAnswers,
   wrongAnswers,
   coins,
+  totalQuestions,
   onRetry,
   onBack,
 }) {
-  const correct = numberValue(correctAnswers);
-  const wrong = numberValue(wrongAnswers);
+  const reportedCorrect = numberValue(correctAnswers);
+  const reportedWrong = numberValue(wrongAnswers);
   const earnedCoins = numberValue(coins);
-  const totalAnswers = correct + wrong;
-  const correctPercent = totalAnswers ? Math.round((correct / totalAnswers) * 100) : 0;
-  const isSuccess = totalAnswers > 0 && correct / totalAnswers >= 0.5;
+  const questionCount = numberValue(totalQuestions) || reportedCorrect + reportedWrong;
+  const correct = questionCount ? Math.min(reportedCorrect, questionCount) : reportedCorrect;
+  const wrong = questionCount ? questionCount - correct : reportedWrong;
+  const correctPercent = questionCount ? Math.round((correct / questionCount) * 100) : 0;
+  const isSuccess = questionCount > 0 && correctPercent >= 50;
 
   return (
     <div className="results-overlay">

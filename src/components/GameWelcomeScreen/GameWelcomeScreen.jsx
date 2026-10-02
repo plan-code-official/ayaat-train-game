@@ -57,18 +57,22 @@ export default function GameWelcomeScreen({
 
   const startDisabled = isLoading || !isReady;
 
+  const handleArtLoad = (event) => {
+    const image = event.currentTarget;
+    const stage = image.closest('.gws-stage');
+    if (stage && image.naturalWidth && image.naturalHeight) {
+      stage.style.setProperty('--gws-art-ratio', String(image.naturalWidth / image.naturalHeight));
+    }
+  };
+
   return (
     <div
       className="gws-screen"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      dir="rtl"
+      style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : undefined}
     >
-
-      {/* HEADER: Stats Badge */}
-      <header className="gws-header">
-        <div
-          className="gws-stats-bg"
-          style={{ backgroundImage: `url(${statsBgImage})` }}
-        >
+      <header className="gws-header" aria-label="إحصاءات اللعبة">
+        <div className="gws-stats-bg" style={{ backgroundImage: `url(${statsBgImage})` }}>
           {statLeftIcon && (
             <img src={statLeftIcon} alt={statLeftAlt} className="gws-stat-icon" />
           )}
@@ -77,7 +81,7 @@ export default function GameWelcomeScreen({
           )}
           {statRightValue !== undefined && (
             <>
-              <span className="gws-stat-text">=</span>
+              <span className="gws-stat-equals" aria-hidden="true">=</span>
               <span className="gws-stat-text gws-stat-text--yellow">{statRightValue}</span>
             </>
           )}
@@ -87,35 +91,34 @@ export default function GameWelcomeScreen({
         </div>
       </header>
 
-      {/* BODY: Hero / Description Image */}
-      <main className="gws-body">
-        <img
-          src={heroImage}
-          alt={heroAlt}
-          className="gws-hero-img"
-        />
-      </main>
+      <main className="gws-main">
+        <div className="gws-stage">
+          <div className="gws-body">
+            <img
+              src={heroImage}
+              alt={heroAlt}
+              className="gws-description-art"
+              onLoad={handleArtLoad}
+            />
+          </div>
 
-      {/* FOOTER: Exit + Start Buttons */}
-      <footer className="gws-footer">
-        <div className="gws-footer-buttons">
-
-          {/* Exit button — uses an <img> child */}
-          <button className="gws-img-btn" onClick={handleExit}>
-            <img src={exitButtonImage} alt="Exit" />
-          </button>
-
-          {/* Start button — uses a CSS background-image */}
-          <button
-            className="gws-start-btn"
-            style={{ backgroundImage: `url(${startButtonImage})` }}
-            onClick={onStart}
-            disabled={startDisabled}
-          />
-
+          <footer className="gws-footer">
+            <div className="gws-footer-buttons">
+              <button className="gws-img-btn" type="button" onClick={handleExit} aria-label="خروج">
+                <img src={exitButtonImage} alt="" />
+              </button>
+              <button
+                className="gws-start-btn"
+                type="button"
+                style={{ backgroundImage: `url(${startButtonImage})` }}
+                onClick={onStart}
+                disabled={startDisabled}
+                aria-label={isLoading ? 'جارٍ التحميل' : 'ابدأ اللعبة'}
+              />
+            </div>
+          </footer>
         </div>
-      </footer>
-
+      </main>
     </div>
   );
 }

@@ -269,30 +269,6 @@ body,
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.hud-timer {
-    min-width: 90px;
-    justify-content: center;
-}
-
-.hud-timer.warning {
-    border-color: var(--danger);
-    animation: pulse-danger 0.5s ease-in-out infinite;
-    color: #fca5a5;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-}
-
-@keyframes pulse-danger {
-
-    0%,
-    100% {
-        box-shadow: 0 0 5px rgba(239, 68, 68, 0.2);
-    }
-
-    50% {
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
-    }
-}
-
 .hud-icon {
     font-size: clamp(15px, 2vw, 20px);
 }

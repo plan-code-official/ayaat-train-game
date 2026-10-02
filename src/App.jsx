@@ -5,6 +5,7 @@ import exitButtonImg from './assets/ExitButton.svg';
 import train1Img from '../Trian1.png';
 import train2Img from '../Trian2.png';
 import train3Img from '../Trian3.png';
+import trainIntroSound from './assets/train.mpeg?url';
 import boxImg from '../Box.png';
 import Celebration from './Celebration/Celebration';
 import ResultsPanel from './ResultsPanel/ResultsPanel';
@@ -209,22 +210,6 @@ const playSFX = (type, isMuted) => {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
       osc.start(now);
       osc.stop(now + 0.45);
-    } else if (type === "timeout") {
-      osc.type = "triangle";
-      [440, 380, 320].forEach((n, i) => {
-        osc.frequency.setValueAtTime(n, now + i * 0.2);
-      });
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-      osc.start(now);
-      osc.stop(now + 0.6);
-    } else if (type === "warning") {
-      osc.type = "square";
-      osc.frequency.setValueAtTime(1000, now);
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-      osc.start(now);
-      osc.stop(now + 0.05);
     } else if (type === "win") {
       osc.type = "sine";
       [523, 659, 784, 1047, 784, 1047, 1319].forEach((n, i) => {
@@ -245,7 +230,6 @@ export default function App() {
   const [playerName, setPlayerName] = useState('');
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(45);
   const [isMuted, setIsMuted] = useState(false);
   const [trainX, setTrainX] = useState(50);
   const [stars, setStars] = useState([]);
@@ -253,6 +237,7 @@ export default function App() {
   const [resultMessage, setResultMessage] = useState(null);
   const [particles, setParticles] = useState([]);
   const [isQuestionImageOpen, setIsQuestionImageOpen] = useState(false);
+  const [isStartingGame, setIsStartingGame] = useState(false);
 
   // API State
   const [apiQuestions, setApiQuestions] = useState([]);
@@ -265,19 +250,18 @@ export default function App() {
   const [victoryData, setVictoryData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const timerDeadlineRef = useRef(0);
-  const timerStartedAtRef = useRef(0);
+  const roundStartedAtRef = useRef(0);
   const roundCompletionRef = useRef(false);
-  const lastDisplayedTimeRef = useRef(null);
 
   const handleCelebrationComplete = useCallback(() => {
     setScreen('complete');
   }, []);
 
   const containerRef = useRef(null);
-  const timerRef = useRef(null);
   const animationRef = useRef(0);
   const questionAudioRef = useRef(null);
+  const trainIntroAudioRef = useRef(null);
+  const startSequenceActiveRef = useRef(false);
   const trainCarRefs = useRef([]);
   const resultMessageTimeoutRef = useRef(null);
   const isTouchDraggingRef = useRef(false);
@@ -298,6 +282,9 @@ export default function App() {
     if (resultMessageTimeoutRef.current) {
       clearTimeout(resultMessageTimeoutRef.current);
     }
+    startSequenceActiveRef.current = false;
+    trainIntroAudioRef.current?.pause();
+    questionAudioRef.current?.pause();
   }, []);
 
   useEffect(() => {
@@ -311,7 +298,7 @@ export default function App() {
 
   // Question audio
   useEffect(() => {
-    if (screen !== 'game' || isMuted) return;
+    if (screen !== 'game' || isMuted || isStartingGame) return;
     const roundData = apiQuestions[currentRound];
     if (!roundData?.audioUrl) return;
 
@@ -327,7 +314,7 @@ export default function App() {
         questionAudioRef.current.pause();
       }
     };
-  }, [currentRound, screen, isMuted, apiQuestions]);
+  }, [currentRound, screen, isMuted, isStartingGame, apiQuestions]);
 
   useEffect(() => {
     fetchQuestions();
@@ -550,24 +537,59 @@ export default function App() {
     e.currentTarget.releasePointerCapture?.(e.pointerId);
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
+    if (startSequenceActiveRef.current) return;
+    startSequenceActiveRef.current = true;
     e.preventDefault();
     playSFX('click', isMuted);
     const isSmallTouchScreen = window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches;
     if (isSmallTouchScreen && !document.fullscreenElement) {
       containerRef.current?.requestFullscreen?.().catch(() => {});
     }
+
+    // Enter gameplay immediately on the Start click. Keep question audio paused
+    // until the train intro finishes and its short pause has elapsed.
+    setIsStartingGame(!isMuted);
     setScreen('game');
     setCurrentRound(0);
     setScore(0);
     setAnswersList([]);
     setAnswerCounts({ correct: 0, wrong: 0 });
     startRound(0);
+
+    if (!isMuted) {
+      const trainAudio = new Audio(trainIntroSound);
+      trainIntroAudioRef.current = trainAudio;
+      try {
+        await new Promise((resolve) => {
+          const finishTrainAudio = () => {
+            trainAudio.removeEventListener('ended', finishTrainAudio);
+            trainAudio.removeEventListener('error', finishTrainAudio);
+            trainAudio.removeEventListener('abort', finishTrainAudio);
+            trainAudio.removeEventListener('pause', finishTrainAudio);
+            resolve();
+          };
+          trainAudio.addEventListener('ended', finishTrainAudio, { once: true });
+          trainAudio.addEventListener('error', finishTrainAudio, { once: true });
+          trainAudio.addEventListener('abort', finishTrainAudio, { once: true });
+          trainAudio.addEventListener('pause', finishTrainAudio, { once: true });
+          trainAudio.play().catch(finishTrainAudio);
+        });
+        if (!startSequenceActiveRef.current) return;
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } finally {
+        if (trainIntroAudioRef.current === trainAudio) {
+          trainIntroAudioRef.current = null;
+        }
+      }
+    }
+
+    if (!startSequenceActiveRef.current) return;
+    setIsStartingGame(false);
+    startSequenceActiveRef.current = false;
   };
 
   const startRound = (roundIdx) => {
-    clearInterval(timerRef.current);
-    timerRef.current = null;
     setIsAnswerLocked(false);
     setResultMessage(null);
     if (resultMessageTimeoutRef.current) {
@@ -576,15 +598,11 @@ export default function App() {
     }
     setTrainX(50);
     const startedAt = Date.now();
-    timerStartedAtRef.current = startedAt;
+    roundStartedAtRef.current = startedAt;
     roundCompletionRef.current = false;
 
     let rData = apiQuestions[roundIdx];
     let lvl = Math.floor(roundIdx / 4) + 1;
-    let timeLimit = lvl === 1 ? 45 : lvl === 2 ? 35 : 30;
-    timerDeadlineRef.current = startedAt + timeLimit * 1000;
-    lastDisplayedTimeRef.current = timeLimit;
-    setTimeLeft(timeLimit);
 
     let items = rData.options.map((opt, idx) => {
       const laneWidth = 100 / rData.options.length;
@@ -623,43 +641,6 @@ export default function App() {
     setPlayerName('');
     setScreen('name');
   };
-
-  // Timer countdown uses the wall clock so it stays accurate when rendering is delayed.
-  useEffect(() => {
-    if (screen !== 'game' || isAnswerLocked) return;
-
-    const updateTimer = () => {
-      if (roundCompletionRef.current || !timerDeadlineRef.current) return;
-
-      const remainingMs = timerDeadlineRef.current - Date.now();
-      const nextTime = Math.max(0, Math.ceil(remainingMs / 1000));
-      const previousTime = lastDisplayedTimeRef.current;
-
-      if (nextTime !== previousTime) {
-        lastDisplayedTimeRef.current = nextTime;
-        setTimeLeft(nextTime);
-        if (nextTime < previousTime && nextTime <= 11) {
-          playSFX('warning', isMuted);
-        }
-      }
-
-      if (remainingMs <= 0) {
-        roundCompletionRef.current = true;
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-        setTimeLeft(0);
-        handleTimeout(true);
-      }
-    };
-
-    updateTimer();
-    timerRef.current = setInterval(updateTimer, 100);
-
-    return () => {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    };
-  }, [screen, isAnswerLocked, currentRound]);
 
   // Main animation / Physics Loop
   useEffect(() => {
@@ -745,7 +726,7 @@ export default function App() {
   };
 
   const finishRound = (isCorrect, selectedAnswerText) => {
-    const timeTaken = Math.max(1, Math.floor((Date.now() - timerStartedAtRef.current) / 1000));
+    const timeTaken = Math.max(1, Math.floor((Date.now() - roundStartedAtRef.current) / 1000));
     const currentQ = apiQuestions[currentRound];
 
     const newAnswer = {
@@ -782,8 +763,6 @@ export default function App() {
     if (!star || isAnswerLocked || roundCompletionRef.current || star.status === 'caught') return;
     roundCompletionRef.current = true;
     setIsAnswerLocked(true);
-    clearInterval(timerRef.current);
-    timerRef.current = null;
     const catchOffset = getTrain2CatchOffset(star);
 
     setStars(list => list.map(s => s.id === star.id ? {
@@ -815,17 +794,6 @@ export default function App() {
         roundCompletionRef.current = false;
       }, 220);
     }
-  };
-
-  const handleTimeout = (fromTimer = false) => {
-    if (roundCompletionRef.current && !fromTimer) return;
-    roundCompletionRef.current = true;
-    setIsAnswerLocked(true);
-    clearInterval(timerRef.current);
-    timerRef.current = null;
-    playSFX('timeout', isMuted);
-
-    finishRound(false, "TIMEOUT");
   };
 
   const createParticles = (starX, starY) => {
@@ -880,7 +848,7 @@ export default function App() {
         <WelcomeScreen 
           questionsCount={apiQuestions.length || Object.keys(GAME_DATA).length}
           onStart={(e) => handleLoginSubmit(e || { preventDefault: () => {} })}
-          isLoading={isLoading}
+          isLoading={isLoading || isStartingGame}
           error={error}
         />
       )}
@@ -1037,6 +1005,7 @@ export default function App() {
             correctAnswers={correctAnswers}
             wrongAnswers={wrongAnswers}
             coins={victoryData?.coins ?? 0}
+            totalQuestions={apiQuestions.length}
             onRetry={handleRetry}
             onBack={handleResultsBack}
           />
