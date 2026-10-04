@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import './GameWelcomeScreen.css';
 
 /**
@@ -57,13 +57,7 @@ export default function GameWelcomeScreen({
 
   const startDisabled = isLoading || !isReady;
 
-  const handleArtLoad = (event) => {
-    const image = event.currentTarget;
-    const stage = image.closest('.gws-stage');
-    if (stage && image.naturalWidth && image.naturalHeight) {
-      stage.style.setProperty('--gws-art-ratio', String(image.naturalWidth / image.naturalHeight));
-    }
-  };
+
 
   return (
     <div
@@ -98,7 +92,6 @@ export default function GameWelcomeScreen({
               src={heroImage}
               alt={heroAlt}
               className="gws-description-art"
-              onLoad={handleArtLoad}
             />
           </div>
 

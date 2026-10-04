@@ -879,7 +879,7 @@ export default function App() {
           <div className="verse-area">
             <div className="verse-label">سؤال التحدي:</div>
             <div className="verse-question-row" dir="rtl">
-              {roundData.verseBefore && <div className="verse-text">
+              {roundData.verseBefore && roundData.verseBefore !== "." && <div className="verse-text">
                 {roundData.verseBefore} <span className={`verse-blank ${isAnswerLocked ? 'filled' : ''}`}>{isAnswerLocked ? roundData.answer : '؟'}</span>
               </div>}
               {roundData.imageUrl && (
