@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import GameWelcomeScreen from '../GameWelcomeScreen/GameWelcomeScreen';
 
 import QuestionCoin from '../../assets/QuestionCoin.png';
@@ -11,6 +11,7 @@ import daddcoin from '../../assets/daddcoin.webp';
 const WelcomeScreen = ({ 
   questionsCount, 
   onStart, 
+  onExit,
   isLoading = false, 
   error = null 
 }) => {
@@ -31,6 +32,7 @@ const WelcomeScreen = ({
       startButtonImage={startButtonBg}
       exitButtonImage={exitButtonBg}
       onStart={onStart}
+      onExit={onExit}
       isLoading={isLoading}
       isReady={isReady}
     />

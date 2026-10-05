@@ -600,6 +600,14 @@ export default function App() {
     setScreen('name');
   };
 
+  const handleExitSite = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/'; 
+    }
+  };
+
   // Main animation / Physics Loop
   useEffect(() => {
     if (screen !== 'game' || isAnswerLocked) return;
@@ -804,6 +812,7 @@ export default function App() {
         <WelcomeScreen
           questionsCount={apiQuestions.length || Object.keys(GAME_DATA).length}
           onStart={(e) => handleLoginSubmit(e || { preventDefault: () => { } })}
+          onExit={handleExitSite}
           isLoading={isLoading || isStartingGame}
           error={error}
         />
@@ -823,7 +832,7 @@ export default function App() {
                 <span>السؤال</span>
                 <strong dir="ltr">{Math.min(currentRound + 1, apiQuestions.length)}/{apiQuestions.length}</strong>
               </div>
-              <button className="ayat-game-header__exit" type="button" onClick={() => setScreen('name')} aria-label="خروج إلى الرئيسية">
+              <button className="ayat-game-header__exit" type="button" onClick={handleExitSite} aria-label="خروج إلى الرئيسية">
                 <img src={exitButtonImg} alt="" />
               </button>
             </div>
