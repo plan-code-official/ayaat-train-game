@@ -159,20 +159,24 @@ export default function App() {
   const refreshAccessToken = async () => {
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      let storedRole = null;
-      try {
-        storedRole = localStorage.getItem("app_role");
-      } catch (e) {
-        console.warn("Could not access localStorage", e);
-      }
-      const refreshEndpoint = storedRole === "STUDENT" ? "/api/v1/student/refresh" : "/api/v1/auth/refresh";
       
-      const refreshRes = await fetch(`${baseUrl}${refreshEndpoint}`, {
+      // 1. Attempt Student Refresh
+      let refreshRes = await fetch(`${baseUrl}/api/v1/student/refresh`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: "{}",
         credentials: 'include',
       });
+
+      // 2. Fallback to Supervisor/Auth Refresh if unauthorized
+      if (!refreshRes.ok) {
+        refreshRes = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: "{}",
+          credentials: 'include',
+        });
+      }
 
       if (refreshRes.ok) {
         const refreshData = await refreshRes.json();
@@ -184,7 +188,7 @@ export default function App() {
           return newToken;
         }
       } else {
-        console.error("Token refresh failed with status", refreshRes.status);
+        console.error("Token refresh failed on both endpoints with status", refreshRes.status);
       }
     } catch (err) {
       console.error("Error during token refresh", err);
