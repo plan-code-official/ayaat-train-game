@@ -158,7 +158,7 @@ export default function App() {
 
   const refreshAccessToken = async () => {
     try {
-      const baseUrl = 'https://learning-platform-f6cy.onrender.com';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
       let storedRole = null;
       try {
         storedRole = localStorage.getItem("app_role");
@@ -342,7 +342,7 @@ export default function App() {
         return;
       }
 
-      const baseUrl = 'https://learning-platform-f6cy.onrender.com';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       // 1. Create Session
       try {
@@ -659,7 +659,7 @@ export default function App() {
     }
 
     try {
-      const baseUrl = 'https://learning-platform-f6cy.onrender.com';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
       await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
         method: 'POST',
         headers: {
