@@ -10,7 +10,7 @@ import boxImg from '../Box.png';
 import Celebration from './Celebration/Celebration';
 import ResultsPanel from './ResultsPanel/ResultsPanel';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
- 
+
 // React createElement helper for SVGs
 const b = {
   jsx: (tag, props) => {
@@ -45,113 +45,9 @@ const GAME_DATA = {
         fullVerse: "اللَّهُ الصَّمَدُ",
         options: ["الصَّمَدُ", "الْوَاحِدُ", "الْأَحَدُ", "الْقَيُّومُ", "الْخَالِقُ", "الرَّزَّاقُ", "الْمَجِيدُ"]
       },
-      // {
-      //   verseBefore: "لَمْ يَلِدْ وَلَمْ",
-      //   answer: "يُولَدْ",
-      //   fullVerse: "لَمْ يَلِدْ وَلَمْ يُولَدْ",
-      //   options: ["يُولَدْ", "يُوجَدْ", "يُعْبَدْ", "يُخْلَقْ", "يُقْهَرْ", "يُبْعَثْ", "يُهْلَكْ"]
-      // },
-      // {
-      //   verseBefore: "وَلَمْ يَكُن لَّهُ كُفُوًا",
-      //   answer: "أَحَدٌ",
-      //   fullVerse: "وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ",
-      //   options: ["أَحَدٌ", "وَلَدٌ", "بَعِيدٌ", "شَرِيكٌ", "نَظِيرٌ", "مَثِيلٌ", "شَبِيهٌ"]
-      // }
     ]
   },
-  // 2: {
-  //   surah: "أركان الإسلام والإيمان",
-  //   type: "quiz",
-  //   timePerRound: 35,
-  //   rounds: [
-  //     {
-  //       verseBefore: "أول ركن من أركان الإسلام هو",
-  //       answer: "الشهادتان",
-  //       fullVerse: "الشهادتان",
-  //       options: ["الشهادتان", "الصلاة", "الصوم", "الزكاة", "الحج", "الإيمان", "الجهاد"]
-  //     },
-  //     {
-  //       verseBefore: "عدد أركان الإيمان في الإسلام",
-  //       answer: "٦ أركان",
-  //       fullVerse: "٦ أركان",
-  //       options: ["٦ أركان", "٥ أركان", "٤ أركان", "٧ أركان", "٣ أركان", "٨ أركان", "١٠ أركان"]
-  //     },
-  //     {
-  //       verseBefore: "الركن الثاني من أركان الإسلام هو",
-  //       answer: "إقام الصلاة",
-  //       fullVerse: "إقام الصلاة",
-  //       options: ["إقام الصلاة", "إيتاء الزكاة", "صوم رمضان", "حج البيت", "الشهادتان", "الجهاد", "الصدقة"]
-  //     },
-  //     {
-  //       verseBefore: "القبلة الأولى للمسلمين هي",
-  //       answer: "المسجد الأقصى",
-  //       fullVerse: "المسجد الأقصى",
-  //       options: ["المسجد الأقصى", "الكعبة المشرفة", "المسجد النبوي", "مسجد قباء", "المسجد الحرام", "البيت المعمور", "مقام إبراهيم"]
-  //     }
-  //   ]
-  // },
-  // 3: {
-  //   surah: "سورة الفاتحة المباركة",
-  //   type: "quran",
-  //   timePerRound: 30,
-  //   rounds: [
-  //     {
-  //       verseBefore: "الْحَمْدُ لِلَّهِ رَبِّ",
-  //       answer: "الْعَالَمِينَ",
-  //       fullVerse: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
-  //       options: ["الْعَالَمِينَ", "الْمُؤْمِنِينَ", "الصَّالِحِينَ", "الْمُسْلِمِينَ", "الْمُتَّقِينَ", "التَّائِبِينَ", "الصَّادِقِينَ"]
-  //     },
-  //     {
-  //       verseBefore: "مَالِكِ يَوْمِ",
-  //       answer: "الدِّينِ",
-  //       fullVerse: "مَالِكِ يَوْمِ الدِّينِ",
-  //       options: ["الدِّينِ", "الْحَقِّ", "الْبَعْثِ", "الْقِيَامِ", "الْحِسَابِ", "الْآخِرَةِ", "الْجَزَاءِ"]
-  //     },
-  //     {
-  //       verseBefore: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ",
-  //       answer: "نَسْتَعِينُ",
-  //       fullVerse: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
-  //       options: ["نَسْتَعِينُ", "نَسْتَغْفِرُ", "نَسْأَلُ", "نَحْمَدُ", "نَدْعُو", "نَشْكُرُ", "نُسَبِّحُ"]
-  //     },
-  //     {
-  //       verseBefore: "اهْدِنَا الصِّرَاطَ",
-  //       answer: "الْمُسْتَقِيمَ",
-  //       fullVerse: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
-  //       options: ["الْمُسْتَقِيمَ", "الْقَوِيمَ", "الْعَظِيمَ", "الْكَرِيمَ", "الْوَاضِحَ", "السَّلِيمَ", "الْأَمِينَ"]
-  //     }
-  //   ]
-  // },
-  // 4: {
-  //   surah: "قصص الأنبياء والرسل",
-  //   type: "quiz",
-  //   timePerRound: 30,
-  //   rounds: [
-  //     {
-  //       verseBefore: "النبي الذي لقبه أبو الأنبياء هو",
-  //       answer: "إبراهيم عليه السلام",
-  //       fullVerse: "إبراهيم عليه السلام",
-  //       options: ["إبراهيم عليه السلام", "آدم عليه السلام", "نوح عليه السلام", "موسى عليه السلام", "عيسى عليه السلام", "إسماعيل عليه السلام", "يعقوب عليه السلام"]
-  //     },
-  //     {
-  //       verseBefore: "النبي الذي ابتلعه الحوت هو",
-  //       answer: "يونس عليه السلام",
-  //       fullVerse: "يونس عليه السلام",
-  //       options: ["يونس عليه السلام", "يوسف عليه السلام", "أيوب عليه السلام", "سليمان عليه السلام", "داود عليه السلام", "زكريا عليه السلام", "يحيى عليه السلام"]
-  //     },
-  //     {
-  //       verseBefore: "النبي الذي كلم الله تكليماً هو",
-  //       answer: "موسى عليه السلام",
-  //       fullVerse: "موسى عليه السلام",
-  //       options: ["موسى عليه السلام", "عيسى عليه السلام", "محمد ﷺ", "إبراهيم عليه السلام", "شعيب عليه السلام", "هارون عليه السلام", "صالح عليه السلام"]
-  //     },
-  //     {
-  //       verseBefore: "النبي الذي كان يصنع السفينة هو",
-  //       answer: "نوح عليه السلام",
-  //       fullVerse: "نوح عليه السلام",
-  //       options: ["نوح عليه السلام", "هود عليه السلام", "صالح عليه السلام", "لوط عليه السلام", "إدريس عليه السلام", "آدم عليه السلام", "شعيب عليه السلام"]
-  //     }
-  //   ]
-  // }
+
 };
 
 const GAME_ROUNDS = [];
@@ -252,12 +148,62 @@ export default function App() {
 
   const roundStartedAtRef = useRef(0);
   const roundCompletionRef = useRef(false);
+  const latestTokenRef = useRef(null);
 
   const handleCelebrationComplete = useCallback(() => {
     setScreen('complete');
   }, []);
 
   const containerRef = useRef(null);
+
+  const apiFetch = async (url, options = {}) => {
+    const currentToken = latestTokenRef.current;
+    const fetchOptions = { ...options };
+    if (currentToken) {
+      fetchOptions.headers = { ...fetchOptions.headers, Authorization: `Bearer ${currentToken}` };
+    }
+
+    let res = await fetch(url, fetchOptions);
+
+    if (res.status === 401) {
+      console.warn("401 Unauthorized encountered. Attempting to refresh token...");
+      try {
+        const baseUrl = 'https://learning-platform-1euu.onrender.com';
+        const storedRole = localStorage.getItem("app_role");
+        const refreshEndpoint = storedRole === "STUDENT" ? "/api/v1/student/refresh" : "/api/v1/auth/refresh";
+        
+        const refreshRes = await fetch(`${baseUrl}${refreshEndpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json();
+          const newToken = refreshData?.data?.accessToken || refreshData?.data?.token || refreshData?.accessToken || refreshData?.token;
+          if (newToken) {
+            console.log("Token refreshed successfully.");
+            setSessionToken(newToken);
+            latestTokenRef.current = newToken;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('token')) urlParams.set('token', newToken);
+            if (urlParams.has('accesstoken')) urlParams.set('accesstoken', newToken);
+            const newUrl = window.location.pathname + '?' + urlParams.toString();
+            window.history.replaceState(null, '', newUrl);
+
+            fetchOptions.headers = { ...fetchOptions.headers, Authorization: `Bearer ${newToken}` };
+            res = await fetch(url, fetchOptions);
+          }
+        } else {
+          console.error("Token refresh failed with status", refreshRes.status);
+        }
+      } catch (err) {
+        console.error("Error during token refresh", err);
+      }
+    }
+    return res;
+  };
   const animationRef = useRef(0);
   const questionAudioRef = useRef(null);
   const trainIntroAudioRef = useRef(null);
@@ -380,14 +326,14 @@ export default function App() {
         setIsLoading(false);
         return;
       }
+      latestTokenRef.current = token;
 
       const baseUrl = 'https://learning-platform-1euu.onrender.com';
 
       // 1. Create Session
       try {
-        const sessionRes = await fetch(`${baseUrl}/api/v1/student/games/9/sessions?lessonId=${lessonId}`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` }
+        const sessionRes = await apiFetch(`${baseUrl}/api/v1/student/games/9/sessions?lessonId=${lessonId}`, {
+          method: 'POST'
         });
         if (sessionRes.ok) {
           const sData = await sessionRes.json();
@@ -401,9 +347,7 @@ export default function App() {
       }
 
       // 2. Fetch Questions
-      const response = await fetch(`${baseUrl}/api/v1/student/games/9/questions?lessonId=${lessonId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await apiFetch(`${baseUrl}/api/v1/student/games/9/questions?lessonId=${lessonId}`);
 
       if (!response.ok) throw new Error('فشل في جلب البيانات من الخادم.');
       const resData = await response.json();
@@ -489,7 +433,7 @@ export default function App() {
     if (!roundData.audioUrl) return;
     if (questionAudioRef.current) questionAudioRef.current.pause();
     questionAudioRef.current = new Audio(roundData.audioUrl);
-    questionAudioRef.current.play().catch(() => {});
+    questionAudioRef.current.play().catch(() => { });
   };
   const currentLevel = Math.floor(currentRound / 4) + 1;
   const correctAnswers = answerCounts.correct;
@@ -544,7 +488,7 @@ export default function App() {
     playSFX('click', isMuted);
     const isSmallTouchScreen = window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches;
     if (isSmallTouchScreen && !document.fullscreenElement) {
-      containerRef.current?.requestFullscreen?.().catch(() => {});
+      containerRef.current?.requestFullscreen?.().catch(() => { });
     }
 
     // Enter gameplay immediately on the Start click. Keep question audio paused
@@ -694,11 +638,10 @@ export default function App() {
 
     try {
       const baseUrl = 'https://learning-platform-1euu.onrender.com';
-      await fetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
+      await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(finalAnswers.map(({ questionId, selectedAnswer, timeTaken }) => ({
           questionId,
@@ -707,9 +650,8 @@ export default function App() {
         })))
       });
 
-      const completeRes = await fetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/complete`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${sessionToken}` }
+      const completeRes = await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/complete`, {
+        method: 'POST'
       });
 
       if (completeRes.ok) {
@@ -840,14 +782,14 @@ export default function App() {
     <div id="game-container" ref={containerRef} onPointerMove={handlePointerMove} onPointerDown={handlePointerDown}>
       <div className="custom-bg" style={{ backgroundImage: 'url(/bg.png)' }} />
 
-      
+
 
       <div className="custom-track" style={{ backgroundImage: 'url(/track.png)' }} />
 
       {screen === 'name' && (
-        <WelcomeScreen 
+        <WelcomeScreen
           questionsCount={apiQuestions.length || Object.keys(GAME_DATA).length}
-          onStart={(e) => handleLoginSubmit(e || { preventDefault: () => {} })}
+          onStart={(e) => handleLoginSubmit(e || { preventDefault: () => { } })}
           isLoading={isLoading || isStartingGame}
           error={error}
         />
@@ -890,7 +832,7 @@ export default function App() {
               )}
               {roundData.audioUrl && (
                 <button className="question-audio-button" type="button" onClick={playQuestionAudio} aria-label="تشغيل صوت السؤال">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /></svg>
                 </button>
               )}
             </div>
