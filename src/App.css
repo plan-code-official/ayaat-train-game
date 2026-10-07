@@ -408,6 +408,8 @@ body,
 }
 
 .ayat-game-header__exit {
+    position: relative;
+    z-index: 70;
     display: grid;
     place-items: center;
     justify-self: end;
@@ -635,12 +637,13 @@ body,
     left: 20px;
     right: 20px;
     bottom: 0;
-    z-index: 30;
+    z-index: 60;
     pointer-events: none;
 }
 
 .falling-star {
     position: absolute;
+    z-index: 60;
     width: clamp(96px, 21vw, 220px);
     min-height: clamp(46px, 8vw, 94px);
     height: auto;
@@ -669,12 +672,13 @@ body,
 .falling-star:hover {
     filter: drop-shadow(0 0 15px rgba(0, 240, 255, 0.6));
     transform: scale(1.08) translateY(-5px);
-    z-index: 10;
+    z-index: 65;
 }
 
 .falling-star:active {
     cursor: grabbing;
     transform: scale(0.95);
+    z-index: 65;
 }
 
 .star-text {
@@ -710,7 +714,7 @@ body,
 }
 
 .falling-star.caught {
-    z-index: 50;
+    z-index: 80;
     pointer-events: none;
     opacity: 1;
     filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));

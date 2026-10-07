@@ -10,6 +10,7 @@ import boxImg from '../Box.png';
 import Celebration from './Celebration/Celebration';
 import ResultsPanel from './ResultsPanel/ResultsPanel';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
+import { preloadCelebrationAndResults } from './utils/preloadAssets';
 
 // React createElement helper for SVGs
 const b = {
@@ -130,6 +131,7 @@ export default function App() {
   const [trainX, setTrainX] = useState(50);
   const [stars, setStars] = useState([]);
   const [isAnswerLocked, setIsAnswerLocked] = useState(false);
+  const [isVerseSolved, setIsVerseSolved] = useState(false);
   const [resultMessage, setResultMessage] = useState(null);
   const [particles, setParticles] = useState([]);
   const [isQuestionImageOpen, setIsQuestionImageOpen] = useState(false);
@@ -248,6 +250,10 @@ export default function App() {
       resultMessageTimeoutRef.current = null;
     }, 900);
   };
+
+  useEffect(() => {
+    preloadCelebrationAndResults();
+  }, []);
 
   useEffect(() => () => {
     if (resultMessageTimeoutRef.current) {
@@ -572,6 +578,7 @@ export default function App() {
 
   const startRound = (roundIdx) => {
     setIsAnswerLocked(false);
+    setIsVerseSolved(false);
     setResultMessage(null);
     if (resultMessageTimeoutRef.current) {
       clearTimeout(resultMessageTimeoutRef.current);
@@ -780,6 +787,7 @@ export default function App() {
     } : s));
 
     if (star.isCorrect) {
+      setIsVerseSolved(true);
       setAnswerCounts((counts) => ({ ...counts, correct: counts.correct + 1 }));
       setTimeout(() => {
         playSFX('correct', isMuted);
@@ -791,6 +799,7 @@ export default function App() {
         finishRound(true, star.text);
       }, 220);
     } else {
+      setIsVerseSolved(false);
       setAnswerCounts((counts) => ({ ...counts, wrong: counts.wrong + 1 }));
       setTimeout(() => {
         playSFX('wrong', isMuted);
@@ -898,7 +907,7 @@ export default function App() {
 
             <div className="verse-question-row" dir="rtl">
               {roundData.verseBefore && roundData.verseBefore !== "." && <div className="verse-text">
-                {roundData.verseBefore} <span className={`verse-blank ${isAnswerLocked ? 'filled' : ''}`}>{isAnswerLocked ? roundData.answer : '؟'}</span>
+                {roundData.verseBefore} <span className={`verse-blank ${isVerseSolved ? 'filled' : ''}`}>{isVerseSolved ? roundData.answer : '؟'}</span>
               </div>}
               {roundData.imageUrl && (
                 <button className="question-image-preview" type="button" onClick={() => setIsQuestionImageOpen(true)} aria-label="عرض صورة السؤال بحجم أكبر">
