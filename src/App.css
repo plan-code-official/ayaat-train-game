@@ -319,27 +319,35 @@ body,
     filter: grayscale(1);
 }
 
-/* Progress Bar */
-.ayat-game-header {
+/* ===== VERSE AREA (COMBINED HOLOGRAPHIC QUESTION & HEADER HUD) ===== */
+.verse-area {
     position: absolute;
-    top: 8px;
+    top: clamp(8px, 1.2vh, 16px);
     left: 50%;
-    z-index: 50;
-    width: calc(100% - 20px);
-    max-width: 1600px;
-    padding: 5px 10px 4px;
     transform: translateX(-50%);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 13px;
-    background: linear-gradient(105deg, rgba(48, 48, 48, 0.96), rgba(77, 77, 77, 0.94));
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.2);
+    width: min(96vw, 1380px);
+    max-width: 1380px;
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: clamp(6px, 1vh, 12px);
+    padding: clamp(8px, 1.2vh, 14px) clamp(14px, 2.5vw, 32px);
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    border-top: 4px solid var(--primary);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 -5px 20px rgba(0, 240, 255, 0.2);
+    box-sizing: border-box;
 }
 
 .ayat-game-header__main {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(100px, 0.8fr) 56px;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    min-height: clamp(54px, 6vw, 76px);
+    width: 100%;
+    min-height: clamp(40px, 4.5vw, 54px);
     gap: 8px;
 }
 
@@ -355,40 +363,47 @@ body,
     align-items: center;
     justify-content: center;
     gap: 8px;
-    width: clamp(100px, 11vw, 138px);
-    height: clamp(44px, 4.5vw, 58px);
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    width: clamp(96px, 10vw, 130px);
+    height: clamp(38px, 4vw, 48px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 999px;
     color: #fff;
     font-family: Arial, sans-serif;
-    font-size: clamp(20px, 2vw, 28px);
+    font-size: clamp(18px, 1.8vw, 24px);
     font-weight: 700;
 }
 
 .ayat-game-header__coins img {
     display: block;
-    width: clamp(36px, 4vw, 48px);
-    height: clamp(36px, 4vw, 48px);
+    width: clamp(28px, 3.2vw, 40px);
+    height: clamp(28px, 3.2vw, 40px);
     object-fit: contain;
 }
 
 .ayat-game-header__question {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
+    gap: 8px;
+    padding: 3px 16px;
+    border-radius: 999px;
+    background: rgba(0, 240, 255, 0.12);
+    border: 1px solid rgba(0, 240, 255, 0.3);
     color: #fff;
     font-family: var(--font-quran);
-    font-size: clamp(22px, 2.5vw, 34px);
+    font-size: clamp(18px, 2.2vw, 28px);
     font-weight: 700;
-    line-height: 1.05;
+    line-height: 1.1;
     text-align: center;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .ayat-game-header__question strong {
     font-family: Arial, sans-serif;
-    font-size: 0.88em;
+    font-size: 0.9em;
+    color: var(--primary);
     line-height: 1.15;
 }
 
@@ -396,13 +411,24 @@ body,
     display: grid;
     place-items: center;
     justify-self: end;
-    width: clamp(42px, 4.5vw, 58px);
-    height: clamp(42px, 4.5vw, 58px);
-    padding: 7px;
+    width: clamp(38px, 4vw, 48px);
+    height: clamp(38px, 4vw, 48px);
+    padding: 6px;
     border: 0;
-    border-radius: 16px;
+    border-radius: 14px;
     background: #f7fbff;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ayat-game-header__exit:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.35);
+}
+
+.ayat-game-header__exit:active {
+    transform: scale(0.95);
 }
 
 .ayat-game-header__exit img {
@@ -413,66 +439,23 @@ body,
 }
 
 .ayat-game-header__progress {
-    height: 10px;
-    margin-top: 3px;
+    height: 6px;
+    width: 100%;
+    margin-top: 1px;
+    margin-bottom: 2px;
     overflow: hidden;
-    border: 2px solid #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 999px;
-    background: #073b4b;
+    background: rgba(7, 59, 75, 0.8);
 }
 
 .ayat-game-header__progress span {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: #58d7f5;
+    background: linear-gradient(90deg, #00f0ff, #58d7f5);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.7);
     transition: width 0.35s ease;
-}
-
-.progress-bar {
-    position: absolute;
-    top: 75px;
-    left: 20px;
-    right: 20px;
-    height: 6px;
-    background: rgba(15, 23, 42, 0.8);
-    border-radius: 3px;
-    z-index: 50;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-dark), var(--primary), #ffffff);
-    border-radius: 3px;
-    transition: width 0.5s ease;
-    box-shadow: 0 0 10px var(--primary);
-}
-
-/* ===== VERSE AREA (HOLOGRAPHIC QUESTION BOX) ===== */
-.verse-area {
-    position: absolute;
-    top: clamp(120px, 17vh, 155px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(92vw, 1000px);
-    max-width: 1000px;
-    text-align: center;
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: clamp(5px, 1vh, 12px);
-    max-height: min(42vh, 340px);
-    overflow: hidden;
-    padding: clamp(14px, 2.5vw, 35px);
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    border-top: 4px solid var(--primary);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 -5px 20px rgba(0, 240, 255, 0.2);
 }
 
 .question-image-preview {
@@ -597,9 +580,9 @@ body,
 
 .verse-text {
     font-family: var(--font-quran);
-    font-size: clamp(24px, 4vw, 38px);
-    font-weight: 600;
-    line-height: 1.5;
+    font-size: clamp(52px, 5.6vw, 86px);
+    font-weight: 700;
+    line-height: 1.35;
     direction: rtl;
     background: linear-gradient(180deg, #FFFFFF 7%, #8EBFFF 100%);
     -webkit-background-clip: text;
@@ -611,10 +594,10 @@ body,
 
 .verse-blank {
     display: inline-block;
-    min-width: 80px;
-    border-bottom: 3px dashed var(--accent);
-    margin: 0 8px;
-    padding: 0 15px;
+    min-width: clamp(110px, 11vw, 180px);
+    border-bottom: 5px dashed var(--accent);
+    margin: 0 12px;
+    padding: 0 18px;
     color: var(--accent-glow);
     -webkit-text-fill-color: var(--accent-glow);
     animation: blinkBorder 1.5s ease-in-out infinite;
@@ -696,7 +679,7 @@ body,
 
 .star-text {
     font-family: var(--font-quran);
-    font-size: clamp(14px, 2vw, 30px);
+    font-size: clamp(16px, 2.2vw, 32px);
     font-weight: 700;
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
@@ -961,88 +944,101 @@ body,
     }
 }
 
-@media (max-width: 600px) {
-    .ayat-game-header {
+@media (max-width: 768px) {
+    .verse-area {
         top: 6px;
         width: calc(100% - 12px);
-        padding: 4px 6px 3px;
+        gap: 3px;
+        padding: 4px 8px 6px;
+        border-radius: 14px;
+        border-top-width: 3px;
     }
 
     .ayat-game-header__main {
-        min-height: 50px;
-        grid-template-columns: minmax(0, 1fr) minmax(82px, 0.8fr) 44px;
+        min-height: 34px;
         gap: 4px;
     }
 
     .ayat-game-header__coins {
-        width: clamp(92px, 30vw, 116px);
-        height: 40px;
+        width: auto;
+        min-width: 72px;
+        height: 30px;
+        padding: 0 6px;
         gap: 4px;
-        font-size: 22px;
+        font-size: 15px;
     }
 
     .ayat-game-header__coins img {
-        width: 34px;
-        height: 34px;
+        width: 22px;
+        height: 22px;
     }
 
     .ayat-game-header__question {
-        font-size: clamp(21px, 6vw, 27px);
+        padding: 2px 8px;
+        font-size: 14px;
+        gap: 4px;
+    }
+
+    .ayat-game-header__question strong {
+        font-size: 13px;
     }
 
     .ayat-game-header__exit {
-        width: 40px;
-        height: 40px;
-        padding: 6px;
-        border-radius: 12px;
+        width: 30px;
+        height: 30px;
+        padding: 4px;
+        border-radius: 9px;
     }
 
     .ayat-game-header__progress {
-        height: 8px;
+        height: 4px;
+        margin-top: 1px;
+        margin-bottom: 2px;
     }
 
     .game-title {
         font-size: clamp(30px, 9vw, 38px);
     }
 
-    .verse-text {
-        font-size: clamp(23px, 7vw, 30px);
-    }
-
-    .verse-area {
-        top: 104px;
-        max-height: 36dvh;
-        gap: 5px;
-        padding: 9px 10px;
-    }
-
-    .verse-label {
-        margin-bottom: 0;
+    .verse-question-row {
+        gap: 6px;
     }
 
     .verse-area .verse-text {
-        font-size: clamp(17px, 5.2vw, 24px);
-        line-height: 1.25;
+        font-size: clamp(32px, 8.8vw, 48px);
+        line-height: 1.35;
+    }
+
+    .verse-blank {
+        min-width: clamp(70px, 18vw, 110px);
+        margin: 0 4px;
+        padding: 0 8px;
+        border-bottom-width: 4px;
     }
 
     .question-image-preview {
-        flex-basis: clamp(54px, 18vw, 78px);
-        width: clamp(54px, 18vw, 78px);
-        height: clamp(54px, 18vw, 78px);
+        flex-basis: clamp(38px, 9vw, 48px);
+        width: clamp(38px, 9vw, 48px);
+        height: clamp(38px, 9vw, 48px);
+        border-radius: 8px;
+    }
+
+    .question-image-preview span {
+        display: none;
     }
 
     .question-audio-button {
-        width: 36px;
-        height: 36px;
+        width: 30px;
+        height: 30px;
     }
 
     .question-audio-button svg {
-        width: 21px;
-        height: 21px;
+        width: 16px;
+        height: 16px;
     }
 
     .star-text {
-        font-size: clamp(13px, 4vw, 20px);
+        font-size: clamp(18px, 5.2vw, 26px);
     }
 
     .options-area {
@@ -1067,6 +1063,31 @@ body,
     }
 }
 
+/* Tablet Screen Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .verse-area {
+        top: 8px;
+        width: min(96vw, 1000px);
+        padding: 8px 16px 10px;
+    }
+
+    .verse-area .verse-text {
+        font-size: clamp(44px, 6.2vw, 64px);
+        line-height: 1.35;
+    }
+
+    .verse-blank {
+        min-width: clamp(95px, 12vw, 150px);
+        margin: 0 8px;
+        padding: 0 12px;
+        border-bottom-width: 4px;
+    }
+
+    .star-text {
+        font-size: clamp(20px, 3.2vw, 32px);
+    }
+}
+
 @media (max-height: 620px) and (orientation: landscape) {
     .game-hud {
         padding: 4px 10px;
@@ -1079,62 +1100,72 @@ body,
     }
 
     .verse-area {
-        top: 82px;
-        max-height: 44dvh;
-        padding: 6px 12px;
-        width: min(85vw, 800px);
-    }
-
-    .question-image-preview {
-        flex-basis: 58px;
-        width: 58px;
-        height: 58px;
-    }
-
-    .ayat-game-header {
-        top: 5px;
-        padding: 3px 7px 3px;
-    }
-
-    .ayat-game-header__main {
-        min-height: 46px;
-        grid-template-columns: minmax(0, 1fr) minmax(90px, 0.8fr) 48px;
-        gap: 8px;
-    }
-
-    .ayat-game-header__coins {
-        width: 106px;
-        height: 38px;
-        font-size: 20px;
-    }
-
-    .ayat-game-header__coins img {
-        width: 32px;
-        height: 32px;
-    }
-
-    .ayat-game-header__question {
-        font-size: 23px;
-    }
-
-    .ayat-game-header__exit {
-        width: 36px;
-        height: 36px;
+        top: 4px;
+        padding: 3px 8px 4px;
+        gap: 3px;
+        width: min(94vw, 920px);
         border-radius: 12px;
     }
 
+    .ayat-game-header__main {
+        min-height: 28px;
+        gap: 6px;
+    }
+
+    .ayat-game-header__coins {
+        height: 26px;
+        min-width: 65px;
+        font-size: 13px;
+        padding: 0 6px;
+    }
+
+    .ayat-game-header__coins img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .ayat-game-header__question {
+        padding: 1px 8px;
+        font-size: 13px;
+    }
+
+    .ayat-game-header__question strong {
+        font-size: 12px;
+    }
+
+    .ayat-game-header__exit {
+        width: 26px;
+        height: 26px;
+        padding: 3px;
+        border-radius: 8px;
+    }
+
     .ayat-game-header__progress {
-        height: 7px;
+        height: 3px;
+        margin-top: 1px;
+        margin-bottom: 1px;
     }
 
-    .verse-label {
-        font-size: 11px;
-        margin-bottom: 4px;
+    .question-image-preview {
+        flex-basis: 36px;
+        width: 36px;
+        height: 36px;
     }
 
-    .verse-text {
-        font-size: clamp(16px, 3.5vh, 22px);
-        line-height: 1.3;
+    .question-image-preview span {
+        display: none;
+    }
+
+    .verse-area .verse-text {
+        font-size: clamp(22px, 6.5vh, 32px);
+        line-height: 1.25;
+    }
+
+    .verse-blank {
+        min-width: clamp(60px, 11vw, 90px);
+        margin: 0 4px;
+        padding: 0 6px;
+        border-bottom-width: 3px;
     }
 
     .options-area {

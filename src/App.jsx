@@ -156,44 +156,58 @@ export default function App() {
 
   const containerRef = useRef(null);
 
-  const refreshAccessToken = async () => {
+  const refreshPromiseRef = useRef(null);
+  const refreshEndpointRef = useRef(null);
+
+  const doRefresh = async () => {
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      
-      // 1. Attempt Student Refresh
-      let refreshRes = await fetch(`${baseUrl}/api/v1/student/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: "{}",
-        credentials: 'include',
-      });
+      const endpoints = ['/api/v1/student/refresh', '/api/v1/auth/refresh'];
+      // Try the endpoint that worked last time first (and only), to avoid duplicate calls
+      const order = refreshEndpointRef.current ? [refreshEndpointRef.current] : endpoints;
 
-      // 2. Fallback to Supervisor/Auth Refresh if unauthorized
-      if (!refreshRes.ok) {
-        refreshRes = await fetch(`${baseUrl}/api/v1/auth/refresh`, {
+      let refreshRes = null;
+      let usedEndpoint = null;
+      for (const ep of order) {
+        refreshRes = await fetch(`${baseUrl}${ep}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: "{}",
           credentials: 'include',
         });
+        usedEndpoint = ep;
+        if (refreshRes.ok) break;
       }
 
-      if (refreshRes.ok) {
+      if (refreshRes && refreshRes.ok) {
         const refreshData = await refreshRes.json();
         const newToken = refreshData?.data?.accessToken || refreshData?.data?.token || refreshData?.accessToken || refreshData?.token;
         if (newToken) {
           console.log("Token refreshed successfully.");
+          refreshEndpointRef.current = usedEndpoint;
           setSessionToken(newToken);
           latestTokenRef.current = newToken;
           return newToken;
         }
       } else {
-        console.error("Token refresh failed on both endpoints with status", refreshRes.status);
+        // Forget cached endpoint so the next attempt can try both again
+        refreshEndpointRef.current = null;
+        console.error("Token refresh failed with status", refreshRes?.status);
       }
     } catch (err) {
       console.error("Error during token refresh", err);
     }
     return null;
+  };
+
+  // Concurrent callers (StrictMode double effects, parallel 401s) share one request
+  const refreshAccessToken = () => {
+    if (!refreshPromiseRef.current) {
+      refreshPromiseRef.current = doRefresh().finally(() => {
+        refreshPromiseRef.current = null;
+      });
+    }
+    return refreshPromiseRef.current;
   };
 
   const apiFetch = async (url, options = {}) => {
@@ -252,6 +266,28 @@ export default function App() {
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [isQuestionImageOpen]);
+
+  const welcomeTrainPlayedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isLoading && screen === 'name' && !isMuted && !welcomeTrainPlayedRef.current) {
+      welcomeTrainPlayedRef.current = true;
+      const audioObj = new Audio(trainIntroSound);
+      trainIntroAudioRef.current = audioObj;
+      const playPromise = audioObj.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          const handleUserInteraction = () => {
+            if (trainIntroAudioRef.current === audioObj) {
+              audioObj.play().catch(() => {});
+            }
+          };
+          window.addEventListener('click', handleUserInteraction, { once: true });
+          window.addEventListener('pointerdown', handleUserInteraction, { once: true });
+        });
+      }
+    }
+  }, [isLoading, screen, isMuted]);
 
   // Question audio
   useEffect(() => {
@@ -324,6 +360,32 @@ export default function App() {
     return answerRight > trainRect.left && answerLeft < trainRect.right && answerBottom > trainRect.top && answerTop < trainRect.bottom;
   };
 
+  const startNewSession = async () => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lessonId = urlParams.get('lessonId');
+      if (!lessonId) return null;
+
+      const token = await refreshAccessToken();
+      if (!token) return null;
+
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+      const sessionRes = await apiFetch(`${baseUrl}/api/v1/student/games/9/sessions?lessonId=${lessonId}`, {
+        method: 'POST'
+      });
+      if (sessionRes.ok) {
+        const sData = await sessionRes.json();
+        if (sData?.data?.id) {
+          setSessionId(sData.data.id);
+          return sData.data.id;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to create session", e);
+    }
+    return null;
+  };
+
   const fetchQuestions = async () => {
     setIsLoading(true);
     setError(null);
@@ -349,20 +411,7 @@ export default function App() {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
       // 1. Create Session
-      try {
-        const sessionRes = await apiFetch(`${baseUrl}/api/v1/student/games/9/sessions?lessonId=${lessonId}`, {
-          method: 'POST'
-        });
-        if (sessionRes.ok) {
-          const sData = await sessionRes.json();
-          if (sData?.data?.id) {
-            setSessionId(sData.data.id);
-            // setSessionToken is already handled securely by refreshAccessToken
-          }
-        }
-      } catch (e) {
-        console.error("Failed to create session", e);
-      }
+      await startNewSession();
 
       // 2. Fetch Questions
       const response = await apiFetch(`${baseUrl}/api/v1/student/games/9/questions?lessonId=${lessonId}`);
@@ -499,56 +548,26 @@ export default function App() {
     e.currentTarget.releasePointerCapture?.(e.pointerId);
   };
 
-  const handleLoginSubmit = async (e) => {
-    if (startSequenceActiveRef.current) return;
-    startSequenceActiveRef.current = true;
-    e.preventDefault();
+  const handleLoginSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     playSFX('click', isMuted);
     const isSmallTouchScreen = window.matchMedia?.('(max-width: 768px), (pointer: coarse)').matches;
     if (isSmallTouchScreen && !document.fullscreenElement) {
       containerRef.current?.requestFullscreen?.().catch(() => { });
     }
 
-    // Enter gameplay immediately on the Start click. Keep question audio paused
-    // until the train intro finishes and its short pause has elapsed.
-    setIsStartingGame(!isMuted);
+    if (trainIntroAudioRef.current) {
+      trainIntroAudioRef.current.pause();
+      trainIntroAudioRef.current = null;
+    }
+
+    setIsStartingGame(false);
     setScreen('game');
     setCurrentRound(0);
     setScore(0);
     setAnswersList([]);
     setAnswerCounts({ correct: 0, wrong: 0 });
     startRound(0);
-
-    if (!isMuted) {
-      const trainAudio = new Audio(trainIntroSound);
-      trainIntroAudioRef.current = trainAudio;
-      try {
-        await new Promise((resolve) => {
-          const finishTrainAudio = () => {
-            trainAudio.removeEventListener('ended', finishTrainAudio);
-            trainAudio.removeEventListener('error', finishTrainAudio);
-            trainAudio.removeEventListener('abort', finishTrainAudio);
-            trainAudio.removeEventListener('pause', finishTrainAudio);
-            resolve();
-          };
-          trainAudio.addEventListener('ended', finishTrainAudio, { once: true });
-          trainAudio.addEventListener('error', finishTrainAudio, { once: true });
-          trainAudio.addEventListener('abort', finishTrainAudio, { once: true });
-          trainAudio.addEventListener('pause', finishTrainAudio, { once: true });
-          trainAudio.play().catch(finishTrainAudio);
-        });
-        if (!startSequenceActiveRef.current) return;
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      } finally {
-        if (trainIntroAudioRef.current === trainAudio) {
-          trainIntroAudioRef.current = null;
-        }
-      }
-    }
-
-    if (!startSequenceActiveRef.current) return;
-    setIsStartingGame(false);
-    startSequenceActiveRef.current = false;
   };
 
   const startRound = (roundIdx) => {
@@ -595,6 +614,7 @@ export default function App() {
     setVictoryData(null);
     setScreen('game');
     startRound(0);
+    startNewSession();
   };
 
   const handleResultsBack = () => {
@@ -608,7 +628,7 @@ export default function App() {
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      window.location.href = '/'; 
+      window.location.href = '/';
     }
   };
 
@@ -629,7 +649,16 @@ export default function App() {
             let nextY = star.y + star.speed;
 
             if (nextY > 105) {
-              return { ...star, y: -10 };
+              const laneWidth = 100 / list.length;
+              const minLeft = star.id * laneWidth + 5;
+              const maxLeft = (star.id + 1) * laneWidth - 15;
+              const randomLeft = minLeft + Math.random() * (maxLeft - minLeft);
+
+              return {
+                ...star,
+                x: randomLeft,
+                y: -12 - (Math.random() * 8)
+              };
             }
             return { ...star, y: nextY };
           }
@@ -645,20 +674,27 @@ export default function App() {
   }, [screen, isAnswerLocked, trainX, currentRound, apiQuestions]);
 
   const submitGameSession = async (finalAnswers) => {
-    const answeredCount = finalAnswers.length;
-    const shouldCelebrate = answeredCount > 0;
+    const totalQuestions = apiQuestions.length || finalAnswers.filter(a => a.isCorrect).length || 1;
+    const correctCount = finalAnswers.filter(a => a.isCorrect).length;
+    const wrongCount = answerCounts.wrong;
+    const denominator = totalQuestions + wrongCount;
+    const percentage = denominator > 0 ? Math.round((correctCount / denominator) * 100) : 0;
+    const shouldCelebrate = percentage >= 50;
 
-    setIsSubmitting(shouldCelebrate);
+    setIsSubmitting(true);
     setScreen(shouldCelebrate ? 'celebration' : 'complete');
-    if (shouldCelebrate) playSFX('win', isMuted);
+    if (shouldCelebrate) {
+      playSFX('win', isMuted);
+    } else {
+      playSFX('wrong', isMuted);
+    }
 
     if (!sessionId || !sessionToken) {
       setIsSubmitting(false);
       // Generate some stars based on final answers (mock offline data)
-      const correctCount = finalAnswers.filter(a => a.isCorrect).length;
-      const ratio = correctCount / (apiQuestions.length || 1);
-      const offlineStars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : ratio > 0 ? 1 : 0;
-      setVictoryData({ score: correctCount * 1, stars: offlineStars, coins: 0 });
+      const ratio = correctCount / totalQuestions;
+      const offlineStars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.5 ? 1 : 0;
+      setVictoryData({ score: percentage, percentage, stars: offlineStars, coins: 0 });
       return;
     }
 
@@ -683,7 +719,11 @@ export default function App() {
       if (completeRes.ok) {
         const cData = await completeRes.json();
         if (cData?.data) {
-          setVictoryData(cData.data);
+          // Explicitly take coins from the first/root coins value on data, not reward.coins
+          setVictoryData({
+            ...cData.data,
+            coins: typeof cData.data.coins === 'number' ? cData.data.coins : 0
+          });
         }
       }
     } catch (e) {
@@ -757,10 +797,22 @@ export default function App() {
         setScore(s => s);
         showResultMessage('خطأ', 'wrong');
 
-        setStars(list => list.map(s => s.id === star.id ? { ...s, status: 'disabled' } : s));
+        const totalOpts = apiQuestions[currentRound]?.options?.length || 4;
+        const laneWidth = 100 / totalOpts;
+        const minLeft = star.id * laneWidth + 5;
+        const maxLeft = (star.id + 1) * laneWidth - 15;
+        const randomLeft = minLeft + Math.random() * (maxLeft - minLeft);
+
+        setStars(list => list.map(s => s.id === star.id ? {
+          ...s,
+          status: 'falling',
+          x: randomLeft,
+          y: -15 - (Math.random() * 12)
+        } : s));
+
         setIsAnswerLocked(false);
         roundCompletionRef.current = false;
-      }, 220);
+      }, 250);
     }
   };
 
@@ -824,8 +876,8 @@ export default function App() {
 
       {(screen === 'game' || screen === 'complete') && roundData && (
         <div className="screen" id="game-screen">
-          <header className="ayat-game-header" dir="ltr">
-            <div className="ayat-game-header__main">
+          <div className="verse-area">
+            <div className="ayat-game-header__main" dir="ltr">
               <div className="ayat-game-header__left">
                 <div className="ayat-game-header__coins" aria-label={`النقاط: ${score}`}>
                   <img src={daddcoinImg} alt="" />
@@ -843,10 +895,7 @@ export default function App() {
             <div className="ayat-game-header__progress" role="progressbar" aria-valuemin={0} aria-valuemax={apiQuestions.length} aria-valuenow={currentRound + 1}>
               <span style={{ width: `${apiQuestions.length ? (Math.min(currentRound + 1, apiQuestions.length) / apiQuestions.length) * 100 : 0}%` }} />
             </div>
-          </header>
 
-          <div className="verse-area">
-            <div className="verse-label">سؤال التحدي:</div>
             <div className="verse-question-row" dir="rtl">
               {roundData.verseBefore && roundData.verseBefore !== "." && <div className="verse-text">
                 {roundData.verseBefore} <span className={`verse-blank ${isAnswerLocked ? 'filled' : ''}`}>{isAnswerLocked ? roundData.answer : '؟'}</span>
@@ -976,7 +1025,7 @@ export default function App() {
             coins={victoryData?.coins ?? 0}
             totalQuestions={apiQuestions.length}
             onRetry={handleRetry}
-            onBack={handleResultsBack}
+            onBack={handleExitSite}
           />
         )
       )}

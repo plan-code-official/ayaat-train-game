@@ -34,12 +34,21 @@ export default function ResultsPanel({
   const correct = numberValue(correctAnswers);
   const wrong = numberValue(wrongAnswers);
   const earnedCoins = numberValue(coins);
-  const questionCount = numberValue(totalQuestions) || correct + wrong;
-  const correctPercent = questionCount ? Math.round((correct / questionCount) * 100) : 0;
-  const isSuccess = questionCount > 0 && correctPercent >= 50;
+  const totalQ = numberValue(totalQuestions) || correct;
+  const denominator = totalQ + wrong;
+  const correctPercent = denominator > 0 ? Math.round((correct / denominator) * 100) : 0;
+  const isSuccess = denominator > 0 && correctPercent >= 50;
 
   // The layout is sized from the exported image's real width / height.
   const [ratio, setRatio] = useState(null);
+
+  const handleExit = onBack || (() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  });
 
   return (
     <div className="results-overlay">
@@ -79,7 +88,7 @@ export default function ResultsPanel({
         </div>
 
         <div className="results-actions">
-          <button className="results-action results-action--back" type="button" onClick={onBack}>
+          <button className="results-action results-action--back" type="button" onClick={handleExit}>
             <img className="results-action__bg" src={exitButtonImage} alt="خروج" />
           </button>
           <button className="results-action results-action--retry" type="button" onClick={onRetry}>
