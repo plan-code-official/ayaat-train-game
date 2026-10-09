@@ -4,6 +4,7 @@ import panelArt from '../assets/results-panel-empty.png';
 import celebrationTitle from '../ResultsPanel/assets/good.png';
 import exitButtonImage from '../assets/Exit1.png';
 import retryButtonImage from '../assets/start_transparent.png';
+import error404Img from '../assets/404.png';
 
 // Keep references in memory to prevent garbage collection of decoded images/audio
 const inMemoryCache = {
@@ -26,7 +27,8 @@ export function preloadCelebrationAndResults() {
     { url: panelArt, label: 'results-panel-art' },
     { url: celebrationTitle, label: 'celebration-title' },
     { url: exitButtonImage, label: 'exit-button' },
-    { url: retryButtonImage, label: 'retry-button' }
+    { url: retryButtonImage, label: 'retry-button' },
+    { url: error404Img, label: 'error-404-img' }
   ];
 
   // 1. Preload & decode images

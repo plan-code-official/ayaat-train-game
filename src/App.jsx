@@ -10,6 +10,7 @@ import boxImg from '../Box.png';
 import Celebration from './Celebration/Celebration';
 import ResultsPanel from './ResultsPanel/ResultsPanel';
 import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
+import ErrorScreen from './components/ErrorScreen/ErrorScreen';
 import { preloadCelebrationAndResults } from './utils/preloadAssets';
 
 // React createElement helper for SVGs
@@ -398,8 +399,15 @@ export default function App() {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const lessonId = urlParams.get('lessonId');
+      const isDemo = urlParams.get('demo') === 'true';
 
-      if (!lessonId) {
+      if (!lessonId && !isDemo) {
+        setError('Missing lessonId in URL parameters.');
+        setIsLoading(false);
+        return;
+      }
+
+      if (isDemo && !lessonId) {
         setApiQuestions(GAME_ROUNDS);
         setIsLoading(false);
         return;
@@ -409,7 +417,7 @@ export default function App() {
       const token = await refreshAccessToken();
       if (!token) {
         console.warn("Could not retrieve initial access token");
-        setApiQuestions(GAME_ROUNDS);
+        setError('تعذر الحصول على رمز الدخول.');
         setIsLoading(false);
         return;
       }
@@ -846,14 +854,16 @@ export default function App() {
     setTimeout(() => setParticles([]), 1200);
   };
 
-  if (error) {
+  if (error || (!isLoading && apiQuestions.length === 0)) {
     return (
-      <div className="screen" style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', fontSize: '24px', fontWeight: 'bold', padding: '20px', textAlign: 'center' }} dir="rtl">
-        <div>{error}</div>
-        <button className="btn btn-primary" onClick={fetchQuestions} style={{ padding: '10px 30px', fontSize: '20px' }}>
-          إعادة المحاولة
-        </button>
-      </div>
+      <ErrorScreen
+        onExit={handleExitSite}
+        description={
+          typeof error === 'string' && error.toLowerCase().includes('lessonid')
+            ? 'لا يمكننا العثور على الدرس المطلوب. يرجى التأكد من الرابط أو العودة للرئيسية.'
+            : (typeof error === 'string' ? error : 'لا يمكننا العثور على هذه الصفحة. دعنا نذهب إلى مكان مألوف.')
+        }
+      />
     );
   }
 
