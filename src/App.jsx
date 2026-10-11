@@ -277,23 +277,55 @@ export default function App() {
   const welcomeTrainPlayedRef = useRef(false);
 
   useEffect(() => {
-    if (!isLoading && screen === 'name' && !isMuted && !welcomeTrainPlayedRef.current) {
-      welcomeTrainPlayedRef.current = true;
-      const audioObj = new Audio(trainIntroSound);
-      trainIntroAudioRef.current = audioObj;
-      const playPromise = audioObj.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          const handleUserInteraction = () => {
-            if (trainIntroAudioRef.current === audioObj) {
-              audioObj.play().catch(() => {});
-            }
-          };
-          window.addEventListener('click', handleUserInteraction, { once: true });
-          window.addEventListener('pointerdown', handleUserInteraction, { once: true });
-        });
+    if (isLoading || screen !== 'name' || isMuted) {
+      if (trainIntroAudioRef.current) {
+        trainIntroAudioRef.current.pause();
+        trainIntroAudioRef.current.currentTime = 0;
+        trainIntroAudioRef.current = null;
       }
+      return;
     }
+
+    if (welcomeTrainPlayedRef.current) return;
+    welcomeTrainPlayedRef.current = true;
+
+    const audioObj = new Audio(trainIntroSound);
+    audioObj.volume = 0.5;
+    trainIntroAudioRef.current = audioObj;
+
+    const cleanupListeners = () => {
+      window.removeEventListener('click', onWelcomeInteract);
+      window.removeEventListener('pointerdown', onWelcomeInteract);
+    };
+
+    const onWelcomeInteract = (event) => {
+      const target = event?.target;
+      if (target?.closest?.('.gws-start-btn, .gws-img-btn, button, .gws-footer')) {
+        cleanupListeners();
+        return;
+      }
+      if (trainIntroAudioRef.current === audioObj && screen === 'name') {
+        audioObj.play().catch(() => {});
+      }
+      cleanupListeners();
+    };
+
+    const playPromise = audioObj.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        window.addEventListener('click', onWelcomeInteract, { once: true });
+        window.addEventListener('pointerdown', onWelcomeInteract, { once: true });
+      });
+    }
+
+    return () => {
+      cleanupListeners();
+      if (trainIntroAudioRef.current === audioObj) {
+        audioObj.pause();
+        audioObj.currentTime = 0;
+        trainIntroAudioRef.current = null;
+      }
+    };
   }, [isLoading, screen, isMuted]);
 
   // Question audio
@@ -570,8 +602,10 @@ export default function App() {
       containerRef.current?.requestFullscreen?.().catch(() => { });
     }
 
+    welcomeTrainPlayedRef.current = true;
     if (trainIntroAudioRef.current) {
       trainIntroAudioRef.current.pause();
+      trainIntroAudioRef.current.currentTime = 0;
       trainIntroAudioRef.current = null;
     }
 
@@ -636,6 +670,7 @@ export default function App() {
     playSFX('click', isMuted);
     setVictoryData(null);
     setPlayerName('');
+    welcomeTrainPlayedRef.current = false;
     setScreen('name');
   };
 
