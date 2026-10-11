@@ -3,7 +3,7 @@ import fireworksSoundUrl from '../Celebration/fireworks.mp3';
 import panelArt from '../assets/results-panel-empty.png';
 import celebrationTitle from '../ResultsPanel/assets/good.png';
 import exitButtonImage from '../assets/Exit1.png';
-import retryButtonImage from '../assets/start_transparent.png';
+import retryButtonImage from '../assets/retry.png';
 import error404Img from '../assets/404.png';
 
 // Keep references in memory to prevent garbage collection of decoded images/audio
