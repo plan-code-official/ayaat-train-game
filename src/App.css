@@ -586,6 +586,7 @@ body,
     font-weight: 700;
     line-height: 1.35;
     direction: rtl;
+    padding-bottom: clamp(8px, 1.2vw, 16px);
     background: linear-gradient(180deg, #FFFFFF 7%, #8EBFFF 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
