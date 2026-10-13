@@ -28,11 +28,6 @@ export const ErrorScreen = ({
           )}
         </h1>
 
-        {/* Supporting Text */}
-        {/* <p className="error-screen__description">
-          {description}
-        </p> */}
-
         {/* Call to Action Navigation Button */}
         {!hideButton && onExit && (
           <button
