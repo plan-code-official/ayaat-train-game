@@ -343,8 +343,8 @@ body,
 }
 
 .ayat-game-header__main {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     min-height: clamp(40px, 4.5vw, 54px);
@@ -355,7 +355,47 @@ body,
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    gap: clamp(8px, 1.8vw, 20px);
     min-width: 0;
+}
+
+.ayat-game-header__lives {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: #fff;
+    white-space: nowrap;
+}
+
+.ayat-game-header__lives-label {
+    font-family: var(--font-quran, 'Cairo', sans-serif);
+    font-size: clamp(13px, 1.6vw, 19px);
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.ayat-game-header__hearts {
+    display: flex;
+    align-items: center;
+    gap: clamp(3px, 0.6vw, 6px);
+}
+
+.ayat-game-header__hearts img {
+    display: block;
+    width: clamp(20px, 2.5vw, 32px);
+    height: clamp(20px, 2.5vw, 32px);
+    object-fit: contain;
+    transition: opacity 0.2s, filter 0.2s, transform 0.2s;
+}
+
+.ayat-game-header__hearts img.is-inactive {
+    opacity: 0.28;
+    filter: grayscale(1);
+    transform: scale(0.85);
 }
 
 .ayat-game-header__coins {
@@ -964,6 +1004,23 @@ body,
         gap: 4px;
     }
 
+    .ayat-game-header__left {
+        gap: 6px;
+    }
+
+    .ayat-game-header__lives-label {
+        font-size: 11px;
+    }
+
+    .ayat-game-header__hearts {
+        gap: 3px;
+    }
+
+    .ayat-game-header__hearts img {
+        width: 17px;
+        height: 17px;
+    }
+
     .ayat-game-header__coins {
         width: auto;
         min-width: 72px;
@@ -1115,6 +1172,23 @@ body,
     .ayat-game-header__main {
         min-height: 28px;
         gap: 6px;
+    }
+
+    .ayat-game-header__left {
+        gap: 4px;
+    }
+
+    .ayat-game-header__lives-label {
+        font-size: 10px;
+    }
+
+    .ayat-game-header__hearts {
+        gap: 2px;
+    }
+
+    .ayat-game-header__hearts img {
+        width: 14px;
+        height: 14px;
     }
 
     .ayat-game-header__coins {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
+import heartImg from './assets/heart.png';
 import daddcoinImg from './assets/daddcoin.webp';
 import exitButtonImg from './assets/ExitButton.svg';
 import train1Img from '../Trian1.png';
@@ -123,11 +124,14 @@ const playSFX = (type, isMuted) => {
   }
 };
 
+const MAX_LIVES = 3;
+
 export default function App() {
   const [screen, setScreen] = useState('name'); // name, game, celebration, complete
   const [playerName, setPlayerName] = useState('');
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(MAX_LIVES);
   const [isMuted, setIsMuted] = useState(false);
   const [trainX, setTrainX] = useState(50);
   const [stars, setStars] = useState([]);
@@ -149,6 +153,8 @@ export default function App() {
   const [victoryData, setVictoryData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const livesRef = useRef(MAX_LIVES);
+  const answersListRef = useRef([]);
   const roundStartedAtRef = useRef(0);
   const roundCompletionRef = useRef(false);
   const latestTokenRef = useRef(null);
@@ -613,6 +619,9 @@ export default function App() {
     setScreen('game');
     setCurrentRound(0);
     setScore(0);
+    setLives(MAX_LIVES);
+    livesRef.current = MAX_LIVES;
+    answersListRef.current = [];
     setAnswersList([]);
     setAnswerCounts({ correct: 0, wrong: 0 });
     startRound(0);
@@ -658,6 +667,9 @@ export default function App() {
     playSFX('click', isMuted);
     setCurrentRound(0);
     setScore(0);
+    setLives(MAX_LIVES);
+    livesRef.current = MAX_LIVES;
+    answersListRef.current = [];
     setAnswersList([]);
     setAnswerCounts({ correct: 0, wrong: 0 });
     setVictoryData(null);
@@ -723,13 +735,12 @@ export default function App() {
     return () => cancelAnimationFrame(animationRef.current);
   }, [screen, isAnswerLocked, trainX, currentRound, apiQuestions]);
 
-  const submitGameSession = async (finalAnswers) => {
-    const totalQuestions = apiQuestions.length || finalAnswers.filter(a => a.isCorrect).length || 1;
-    const correctCount = finalAnswers.filter(a => a.isCorrect).length;
+  const submitGameSession = async (finalAnswers = answersListRef.current) => {
+    const correctCount = (finalAnswers && finalAnswers.filter(a => a.isCorrect).length) || 0;
     const wrongCount = answerCounts.wrong;
-    const denominator = totalQuestions + wrongCount;
-    const percentage = denominator > 0 ? Math.round((correctCount / denominator) * 100) : 0;
-    const shouldCelebrate = percentage >= 50;
+    const totalAns = correctCount + wrongCount;
+    const percentage = totalAns > 0 ? Math.round((correctCount / totalAns) * 100) : 0;
+    const shouldCelebrate = percentage > 50;
 
     setIsSubmitting(true);
     setScreen(shouldCelebrate ? 'celebration' : 'complete');
@@ -742,7 +753,7 @@ export default function App() {
     if (!sessionId || !sessionToken) {
       setIsSubmitting(false);
       // Generate some stars based on final answers (mock offline data)
-      const ratio = correctCount / totalQuestions;
+      const ratio = totalAns > 0 ? correctCount / totalAns : 0;
       const offlineStars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.5 ? 1 : 0;
       setVictoryData({ score: percentage, percentage, stars: offlineStars, coins: 0 });
       return;
@@ -750,17 +761,19 @@ export default function App() {
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL;
-      await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(finalAnswers.map(({ questionId, selectedAnswer, timeTaken }) => ({
-          questionId,
-          selectedAnswer,
-          timeTaken,
-        })))
-      });
+      if (finalAnswers && finalAnswers.length > 0) {
+        await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/submit-answers`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(finalAnswers.map(({ questionId, selectedAnswer, timeTaken }) => ({
+            questionId,
+            selectedAnswer,
+            timeTaken,
+          })))
+        });
+      }
 
       const completeRes = await apiFetch(`${baseUrl}/api/v1/student/games/sessions/${sessionId}/complete`, {
         method: 'POST'
@@ -800,6 +813,7 @@ export default function App() {
     setAnswersList(prev => {
       const nextList = [...prev, newAnswer];
       newAnswersList = nextList;
+      answersListRef.current = nextList;
       if (currentRound + 1 >= apiQuestions.length) {
         triggerSubmit = true;
       }
@@ -844,10 +858,22 @@ export default function App() {
     } else {
       setIsVerseSolved(false);
       setAnswerCounts((counts) => ({ ...counts, wrong: counts.wrong + 1 }));
+      const nextLives = Math.max(0, livesRef.current - 1);
+      livesRef.current = nextLives;
+      setLives(nextLives);
+
       setTimeout(() => {
         playSFX('wrong', isMuted);
         setScore(s => s);
         showResultMessage('خطأ', 'wrong');
+
+        if (nextLives <= 0) {
+          setIsAnswerLocked(true);
+          setTimeout(() => {
+            submitGameSession(answersListRef.current);
+          }, 500);
+          return;
+        }
 
         const totalOpts = apiQuestions[currentRound]?.options?.length || 4;
         const laneWidth = 100 / totalOpts;
@@ -933,6 +959,19 @@ export default function App() {
           <div className="verse-area">
             <div className="ayat-game-header__main" dir="ltr">
               <div className="ayat-game-header__left">
+                <div className="ayat-game-header__lives" dir="rtl">
+                  <span className="ayat-game-header__lives-label">القلوب</span>
+                  <div className="ayat-game-header__hearts">
+                    {Array.from({ length: MAX_LIVES }).map((_, idx) => (
+                      <img
+                        key={idx}
+                        src={heartImg}
+                        alt=""
+                        className={idx < lives ? 'is-active' : 'is-inactive'}
+                      />
+                    ))}
+                  </div>
+                </div>
                 <div className="ayat-game-header__coins" aria-label={`النقاط: ${score}`}>
                   <img src={daddcoinImg} alt="" />
                   <strong>{score}</strong>
@@ -1076,6 +1115,7 @@ export default function App() {
             totalScore={100}
             correctAnswers={correctAnswers}
             wrongAnswers={wrongAnswers}
+            totalAnswers={correctAnswers + wrongAnswers}
             coins={victoryData?.coins ?? 0}
             totalQuestions={apiQuestions.length}
             onRetry={handleRetry}

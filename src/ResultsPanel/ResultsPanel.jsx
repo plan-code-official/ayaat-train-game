@@ -27,6 +27,7 @@ export default function ResultsPanel({
   wrongAnswers,
   coins,
   totalQuestions,
+  totalAnswers,
   onRetry,
   onBack,
   debugOverlay,
@@ -34,10 +35,9 @@ export default function ResultsPanel({
   const correct = numberValue(correctAnswers);
   const wrong = numberValue(wrongAnswers);
   const earnedCoins = numberValue(coins);
-  const totalQ = numberValue(totalQuestions) || correct;
-  const denominator = totalQ + wrong;
-  const correctPercent = denominator > 0 ? Math.round((correct / denominator) * 100) : 0;
-  const isSuccess = denominator > 0 && correctPercent >= 50;
+  const total = numberValue(totalAnswers) || (correct + wrong);
+  const correctPercent = total > 0 ? Math.max(0, Math.min(100, Math.round((correct / total) * 100))) : 0;
+  const isSuccess = total > 0 && correctPercent > 50;
 
   // The layout is sized from the exported image's real width / height.
   const [ratio, setRatio] = useState(null);
