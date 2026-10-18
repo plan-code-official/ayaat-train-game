@@ -743,12 +743,6 @@ export default function App() {
     const shouldCelebrate = percentage > 50;
 
     setIsSubmitting(true);
-    setScreen(shouldCelebrate ? 'celebration' : 'complete');
-    if (shouldCelebrate) {
-      playSFX('win', isMuted);
-    } else {
-      playSFX('wrong', isMuted);
-    }
 
     if (!sessionId || !sessionToken) {
       setIsSubmitting(false);
@@ -756,6 +750,12 @@ export default function App() {
       const ratio = totalAns > 0 ? correctCount / totalAns : 0;
       const offlineStars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.5 ? 1 : 0;
       setVictoryData({ score: percentage, percentage, stars: offlineStars, coins: 0 });
+      setScreen(shouldCelebrate ? 'celebration' : 'complete');
+      if (shouldCelebrate) {
+        playSFX('win', isMuted);
+      } else {
+        playSFX('wrong', isMuted);
+      }
       return;
     }
 
@@ -793,6 +793,12 @@ export default function App() {
       console.error("Submission error", e);
     } finally {
       setIsSubmitting(false);
+      setScreen(shouldCelebrate ? 'celebration' : 'complete');
+      if (shouldCelebrate) {
+        playSFX('win', isMuted);
+      } else {
+        playSFX('wrong', isMuted);
+      }
     }
   };
 
@@ -1104,24 +1110,24 @@ export default function App() {
         </div>
       )}
 
+      {isSubmitting && (
+        <div className="submitting-overlay" aria-busy="true">
+          <div className="submitting-spinner" />
+        </div>
+      )}
+
       {screen === 'complete' && (
-        isSubmitting ? (
-          <div className="results-overlay" style={{ textAlign: 'center', color: '#fff', fontSize: '24px' }}>
-            تحميل
-          </div>
-        ) : (
-          <ResultsPanel
-            score={victoryData?.score ?? score}
-            totalScore={100}
-            correctAnswers={correctAnswers}
-            wrongAnswers={wrongAnswers}
-            totalAnswers={correctAnswers + wrongAnswers}
-            coins={victoryData?.coins ?? 0}
-            totalQuestions={apiQuestions.length}
-            onRetry={handleRetry}
-            onBack={handleExitSite}
-          />
-        )
+        <ResultsPanel
+          score={victoryData?.score ?? score}
+          totalScore={100}
+          correctAnswers={correctAnswers}
+          wrongAnswers={wrongAnswers}
+          totalAnswers={correctAnswers + wrongAnswers}
+          coins={victoryData?.coins ?? 0}
+          totalQuestions={apiQuestions.length}
+          onRetry={handleRetry}
+          onBack={handleExitSite}
+        />
       )}
 
       <Celebration
